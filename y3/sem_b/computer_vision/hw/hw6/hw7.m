@@ -41,7 +41,7 @@ imagesc(blackBox); colormap(gca, 'jet'); hold on
 for l = letters
    file_name = sprintf('%s%s',l, fileExtension);
    letterImage = read_data(file_name);
-   [Y, X] = findLetter(txt, letterImage, 0.76);
+   [Y, X] = findLetter(txt, letterImage, 0.70);
    text(X, Y, l, 'Color', 'r', 'FontSize', 20);
 end
 
