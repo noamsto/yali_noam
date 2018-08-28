@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".PickFacesActivity"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:id="@+id/swipeLayout">
 
     <GridView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="4"
         android:numColumns="3"
-        android:padding="7dp"></GridView>
+        android:padding="7dp"
+        android:id="@+id/SetsGrid"></GridView>
 
-</android.support.v7.widget.LinearLayoutCompat>
+</android.support.v4.widget.SwipeRefreshLayout>

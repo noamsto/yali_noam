@@ -8,6 +8,8 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.content.Intent
+import android.view.View
+import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.*
 
 
@@ -29,12 +31,24 @@ class MainActivity : AppCompatActivity() {
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
+            selectSetBTN.isClickable = false
             requestPermissions()
         } else{
-//            doWork()
+            selectSetBTN.isClickable = true
+        }
+    }
+
+
+
+    fun pickFacesSet(view: View){
+        if (selectSetBTN.isClickable){
             val pickFacesIntent = Intent(this, PickFacesActivity::class.java)
             startActivity(pickFacesIntent)
         }
+        else{
+            requestPermissions()
+        }
+
     }
 
 
@@ -50,10 +64,6 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this,
                     arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), WRITE_PERMISSION_CODE)
 
-            // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
-            // app-defined int constant. The callback method gets the
-            // result of the request.
-
         } else {
             Log.d(TAG, "External Write Permission Granted")
         }
@@ -63,7 +73,12 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         when (requestCode) {
-            WRITE_PERMISSION_CODE -> doWork()
+            WRITE_PERMISSION_CODE -> {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED)
+                    return
+                selectSetBTN.isClickable = true
+            }
         }
 
     }
