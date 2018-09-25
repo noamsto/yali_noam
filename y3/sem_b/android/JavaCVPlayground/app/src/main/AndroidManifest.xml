@@ -20,7 +20,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".PickFacesActivity" />
-        <activity android:name=".PickFacesActivity"></activity>
+        <activity android:name=".PickFacesActivity" />
+
+        <meta-data
+            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:value="face" />
+
+        <activity android:name=".FaceDetectionActivity"></activity>
     </application>
 
 </manifest>
