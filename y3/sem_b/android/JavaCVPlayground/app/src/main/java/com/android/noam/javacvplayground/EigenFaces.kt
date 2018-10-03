@@ -9,15 +9,16 @@ import org.bytedeco.javacpp.opencv_face.EigenFaceRecognizer
 import org.bytedeco.javacpp.opencv_imgcodecs
 import org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE
 import org.bytedeco.javacpp.opencv_imgcodecs.imread
+import org.jetbrains.anko.doAsync
 import java.io.File
 import java.lang.RuntimeException
 import java.nio.IntBuffer
 import java.util.*
 
 
-class EigenFacesPrep(csvFileName: String, private val facesDirPath: String) {
+class EigenFaces(private val facesDirPath: String) {
 
-    private val TAG = "EigenFacesPrep"
+    private val TAG = "EigenFaces"
 
     private var images = MatVector()
     private var labels = Vector<Int>()
@@ -27,36 +28,27 @@ class EigenFacesPrep(csvFileName: String, private val facesDirPath: String) {
     private var imHeight: Int = 0
     private var imWidth: Int = 0
 
-    init {
-        if (File("$facesDirPath/$csvFileName").exists())
-            Log.d(TAG, "Successfully opened $csvFileName")
-        else
-            Log.d(TAG, "Failed to open $csvFileName")
-    }
-
 
     fun readImagesFromDir() {
         var image: Mat
-        var label: Int
+        var label: Int = -1
         val facesDir = File(facesDirPath)
-        for (sampleDir in facesDir.listFiles()) {
-            if (!sampleDir.isDirectory)
-                continue
-            for (sample in sampleDir.listFiles()) {
-                if (sample.extension != "pgm")
-                    continue
-                image = opencv_imgcodecs.imread(sample.path, CV_LOAD_IMAGE_GRAYSCALE)
-                label = sampleDir.name.substringAfter("s").toInt() - 1
+        facesDir.walkTopDown().forEach {
+            if (it.isDirectory && it != facesDir) {
+                label = it.name.filter { it.isDigit() }.toInt() - 1
+            } else if (it.parentFile != facesDir &&
+                    it.extension.matches("""pgm|jpg|bmp|png""".toRegex())) {
+                image = opencv_imgcodecs.imread(it.path, CV_LOAD_IMAGE_GRAYSCALE)
                 images.push_back(image)
                 labels.addElement(label)
-                Log.d(TAG, "Read ${sample.path} with Label $label")
+                Log.d(TAG, "Read ${it.path} with Label $label")
             }
         }
         imHeight = images[0].arrayHeight()
         imWidth = images[0].arrayWidth()
     }
 
-    fun predict_image(img_path: String): Int {
+    fun predictImage(img_path: String): Int {
 
         if (eigenFaceRecognizer.empty()) {
             Log.e(TAG, "Called predict without training model.")
@@ -71,12 +63,12 @@ class EigenFacesPrep(csvFileName: String, private val facesDirPath: String) {
             Log.e(TAG, e.message)
             return -1
         }
-        val predictedLabel = label.get(0)
+        val predictedLabel = label[0]
         Log.d(TAG, "predicted $predictedLabel, Confidence value: ${confidence.get(0)}")
         return predictedLabel
     }
 
-    fun train_model(): Boolean {
+    fun trainModel(): Boolean {
         if (images.empty() || labels.isEmpty()) {
             Log.e(TAG, "Called train model without reading any images or labels.")
             return false
@@ -88,20 +80,20 @@ class EigenFacesPrep(csvFileName: String, private val facesDirPath: String) {
         for (i in 0 until labels.size - 1) {
             intBuffer.put(i, labels[i])
         }
-        Log.d(TAG, "Training model with ${images.size()} samples and ${labelMat.size()} labels. ")
+        Log.d(TAG, "Training model with ${images.size()} samples and ${labels.max()?.plus(1)} labels. ")
         eigenFaceRecognizer.train(images, labelMat)
+        Log.d(TAG, "Training Finished. ")
         return true
     }
 
     fun runTest() {
-        val testsample_path = "$facesDirPath/11_7.pgm"
-        readImagesFromDir()
-        train_model()
-        predict_image(testsample_path)
+        val testSamplePath = "$facesDirPath/11_7.pgm"
+        predictImage(testSamplePath)
     }
 
+}
 
-    // maybe wont be needed
+// maybe wont be needed
 //    fun norm_0_255 (src : Mat) : Mat{
 //        val dst : Mat = Mat()
 //        when (src.channels()){
@@ -113,4 +105,4 @@ class EigenFacesPrep(csvFileName: String, private val facesDirPath: String) {
 //    }
 
 
-}
+

@@ -2,13 +2,17 @@ package com.android.noam.javacvplayground
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
+import android.os.Parcel
+import android.os.Parcelable
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.GridView
 import kotlinx.android.synthetic.main.activity_pick_faces.*
@@ -16,11 +20,15 @@ import kotlinx.android.synthetic.main.grid_item.view.*
 import java.io.File
 
 
-data class FacesSet(val name: String, val path:String, val peopleCount: Int, val samples: Int)
 
-class PickFacesActivity : AppCompatActivity() {
+class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
+
+    companion object {
+        const val FACE_SET_TAG = "FaceSetTag"
+    }
 
     private val TAG = "PickFacesActivity"
+
     private val faceSets : ArrayList<FacesSet> = ArrayList()
     private lateinit var  facesSetAdapter : FacesSetAdapter
 
@@ -29,6 +37,7 @@ class PickFacesActivity : AppCompatActivity() {
         setContentView(R.layout.activity_pick_faces)
 
         val facesSetGrid: GridView = SetsGrid
+        facesSetGrid.onItemClickListener = this
         facesSetAdapter = FacesSetAdapter(this, faceSets)
         facesSetGrid.adapter = facesSetAdapter
         swipeLayout.setOnRefreshListener {
@@ -40,13 +49,7 @@ class PickFacesActivity : AppCompatActivity() {
         readFacesSets()
     }
 
-    /* Checks if external storage is available to at least read */
-    fun isExternalStorageReadable(): Boolean {
-        return Environment.getExternalStorageState() in
-                setOf(Environment.MEDIA_MOUNTED, Environment.MEDIA_MOUNTED_READ_ONLY)
-    }
-
-    fun getPublicPicturesStorageDir(): File? {
+    private fun getPublicPicturesStorageDir(): File? {
         // Get the directory for the user's public pictures directory.
         val file = File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "Faces")
@@ -56,18 +59,18 @@ class PickFacesActivity : AppCompatActivity() {
         return file
     }
 
-    fun readFacesSets(){
+    private fun readFacesSets(){
         val picDir = getPublicPicturesStorageDir()
         if (picDir != null) {
             Log.d(TAG, "Searching for all faces sets in ${picDir.absolutePath}")
             for (facesSet in picDir.listFiles()){
                 var numOfSamples = 0
-                var peopleCount = -1
+                var peopleCount = 0
                 facesSet.walkTopDown().forEach {
-                    if (it.extension.matches(Regex.fromLiteral("pgm"))){
+                    if (it.parentFile != facesSet && it.extension.matches("""pgm|jpg|bmp|png""".toRegex())){
                         numOfSamples++
                     }
-                    if (it.isDirectory)
+                    if (it != facesSet && it.isDirectory)
                         peopleCount++
                 }
                 val faceSet = FacesSet(facesSet.nameWithoutExtension, facesSet.absolutePath, peopleCount,
@@ -80,6 +83,11 @@ class PickFacesActivity : AppCompatActivity() {
         facesSetAdapter.notifyDataSetChanged()
     }
 
+    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        val faceDetectorIntent = Intent(this, FaceDetectorActivity::class.java)
+        faceDetectorIntent.putExtra(FACE_SET_TAG, faceSets[position])
+        startActivity(faceDetectorIntent)
+    }
 
     class  FacesSetAdapter(private val activity: Activity, private val facesSets: ArrayList<FacesSet> ) : BaseAdapter(){
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
@@ -101,4 +109,32 @@ class PickFacesActivity : AppCompatActivity() {
     }
 }
 
+data class FacesSet (val name: String, val path:String, val peopleCount: Int, val samples: Int) : Parcelable {
+    constructor(parcel: Parcel) : this(
+            parcel.readString(),
+            parcel.readString(),
+            parcel.readInt(),
+            parcel.readInt())
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(name)
+        parcel.writeString(path)
+        parcel.writeInt(peopleCount)
+        parcel.writeInt(samples)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<FacesSet> {
+        override fun createFromParcel(parcel: Parcel): FacesSet {
+            return FacesSet(parcel)
+        }
+
+        override fun newArray(size: Int): Array<FacesSet?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
 

@@ -9,6 +9,7 @@ import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.content.Intent
 import android.view.View
+import com.google.firebase.FirebaseApp
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.*
 
@@ -28,7 +29,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             selectSetBTN.isClickable = false
@@ -38,8 +38,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-
     fun pickFacesSet(view: View){
         if (selectSetBTN.isClickable){
             val pickFacesIntent = Intent(this, PickFacesActivity::class.java)
@@ -48,11 +46,9 @@ class MainActivity : AppCompatActivity() {
         else{
             requestPermissions()
         }
-
     }
 
-
-    fun requestPermissions() {
+    private fun requestPermissions() {
         Log.d(TAG, "Requesting Permission")
 
         // Here, thisActivity is the current activity
@@ -91,32 +87,52 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-            PICK_DIR_CODE -> {
-                facesDir = data?.data!!.path
-                Log.d(TAG, "Selected path is $facesDir")
-                facesDir = facesDir.removePrefix("/tree/primary:")
-                facesDir = "/sdcard/$facesDir"
-//                facesDir = facesDir.substring(facesDir.indexOf("/storage"))
-                Log.d(TAG, "faces path is $facesDir")
-                secondWork()
-            }
-        }
-
-    }
 
 
-    fun secondWork() {
+//    fun pickFile (view : View){
+//        val intent = Intent(Intent.ACTION_GET_CONTENT)
+//        intent.type = "*/*"
+//        startActivityForResult(intent, 7)
+//    }
 
-        val eigenFacesPrep = EigenFacesPrep(csvName, facesDir)
-        val dialog = indeterminateProgressDialog("Reading all the training images","Please Wait"  )
-        {
-        }
-        dialog.show()
-        eigenFacesPrep.readImagesFromDir()
+//
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//        when (requestCode) {
+//            PICK_DIR_CODE -> {
+//                facesDir = data?.data!!.path
+//                Log.d(TAG, "Selected path is $facesDir")
+//                facesDir = facesDir.removePrefix("/tree/primary:")
+//                facesDir = "/sdcard/$facesDir"
+////                facesDir = facesDir.substring(facesDir.indexOf("/storage"))
+//                Log.d(TAG, "faces path is $facesDir")
+//                secondWork()
+//            }
+//            7 -> {
+//                if (resultCode == RESULT_OK) {
+//                    val pathHolder = data?.data?.path
+//                    Log.d(TAG, "Pic path is $pathHolder")
+//                    if (pathHolder != null) {
+//                        FirebaseApp.initializeApp(this)
+//                        FaceDetectorWrapper().detectFromFile("/storage/emulated/0/Download/att_faces/s1/1.pgm")
+//                    }
+//                }
+//
+//            }
+//
+//        }
+//    }
+
+
+//        fun secondWork() {
+//
+//            val eigenFacesPrep = EigenFaces(csvName, facesDir)
+//            val dialog = indeterminateProgressDialog("Reading all the training images","Please Wait"  )
+//            {
+//            }
+//            dialog.show()
+//            eigenFacesPrep.readImagesFromDir()
 //        dialog.dismiss()
 //        doAsync {
 //            //Execute all the lon running tasks here
@@ -127,15 +143,15 @@ class MainActivity : AppCompatActivity() {
 
 
 //        val testsample_path = "$facesDir/11_7.pgm"
-//        eigenFacesPrep.predict_image(testsample_path)
+//        eigenFacesPrep.predictImage(testsample_path)
+//        }
+//
+//
+//        fun doWork() {
+//            pickDirectory()
+//
+//
+//        }
     }
-
-
-    fun doWork() {
-        pickDirectory()
-
-
-    }
-}
 
 
