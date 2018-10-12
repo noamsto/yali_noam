@@ -20,7 +20,6 @@ import kotlinx.android.synthetic.main.grid_item.view.*
 import java.io.File
 
 
-
 class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
 
     companion object {
@@ -29,8 +28,8 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
 
     private val TAG = "PickFacesActivity"
 
-    private val faceSets : ArrayList<FacesSet> = ArrayList()
-    private lateinit var  facesSetAdapter : FacesSetAdapter
+    private val faceSets: ArrayList<FacesSet> = ArrayList()
+    private lateinit var facesSetAdapter: FacesSetAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,15 +58,15 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
         return file
     }
 
-    private fun readFacesSets(){
+    private fun readFacesSets() {
         val picDir = getPublicPicturesStorageDir()
         if (picDir != null) {
             Log.d(TAG, "Searching for all faces sets in ${picDir.absolutePath}")
-            for (facesSet in picDir.listFiles()){
+            for (facesSet in picDir.listFiles()) {
                 var numOfSamples = 0
                 var peopleCount = 0
                 facesSet.walkTopDown().forEach {
-                    if (it.parentFile != facesSet && it.extension.matches("""pgm|jpg|bmp|png""".toRegex())){
+                    if (it.parentFile != facesSet && it.extension.matches("""pgm|jpg|bmp|png""".toRegex())) {
                         numOfSamples++
                     }
                     if (it != facesSet && it.isDirectory)
@@ -89,11 +88,11 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
         startActivity(faceDetectorIntent)
     }
 
-    class  FacesSetAdapter(private val activity: Activity, private val facesSets: ArrayList<FacesSet> ) : BaseAdapter(){
+    class FacesSetAdapter(private val activity: Activity, private val facesSets: ArrayList<FacesSet>) : BaseAdapter() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-            val setGridItem = if (convertView != null){
+            val setGridItem = if (convertView != null) {
                 convertView
-            }else {
+            } else {
                 val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
                 inflater.inflate(R.layout.grid_item, null)
             }
@@ -103,13 +102,14 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
             setGridItem.facesCount.text = "Samples: ${faceSet.samples}"
             return setGridItem
         }
+
         override fun getItem(position: Int): Any = facesSets[position]
         override fun getItemId(position: Int): Long = position.toLong()
         override fun getCount(): Int = facesSets.size
     }
 }
 
-data class FacesSet (val name: String, val path:String, val peopleCount: Int, val samples: Int) : Parcelable {
+data class FacesSet(val name: String, val path: String, val peopleCount: Int, val samples: Int) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readString(),
             parcel.readString(),
