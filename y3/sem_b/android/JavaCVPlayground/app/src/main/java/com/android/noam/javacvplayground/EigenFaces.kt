@@ -86,9 +86,10 @@ class EigenFaces(private val facesDirPath: String) {
         return true
     }
 
-    fun runTest() {
-        val testSamplePath = "$facesDirPath/11_7.pgm"
-        predictImage(testSamplePath)
+    fun runTest(): Int {
+        val testSamplePath = "$facesDirPath/12.jpg"
+        Log.d(TAG, "Predicting file: $testSamplePath")
+        return predictImage(testSamplePath)
     }
 
 }

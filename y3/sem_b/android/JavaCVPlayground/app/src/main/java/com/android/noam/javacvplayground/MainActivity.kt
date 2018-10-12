@@ -80,11 +80,11 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun pickDirectory() {
-        val i = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        i.addCategory(Intent.CATEGORY_DEFAULT)
-        startActivityForResult(Intent.createChooser(i, "Choose directory"), PICK_DIR_CODE)
-    }
+//    private fun pickDirectory() {
+//        val i = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+//        i.addCategory(Intent.CATEGORY_DEFAULT)
+//        startActivityForResult(Intent.createChooser(i, "Choose directory"), PICK_DIR_CODE)
+//    }
 
 
 

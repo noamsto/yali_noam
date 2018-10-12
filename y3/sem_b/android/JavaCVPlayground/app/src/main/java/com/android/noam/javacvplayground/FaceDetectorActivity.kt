@@ -3,11 +3,14 @@ package com.android.noam.javacvplayground
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.doAsyncResult
+import org.jetbrains.anko.longToast
+import org.jetbrains.anko.runOnUiThread
 
 class FaceDetectorActivity : AppCompatActivity() {
 
-    lateinit var faceSet : FacesSet
-    lateinit var eigenFaces: EigenFaces
+    private lateinit var faceSet : FacesSet
+    private lateinit var eigenFaces: EigenFaces
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -15,12 +18,18 @@ class FaceDetectorActivity : AppCompatActivity() {
         faceSet = intent.extras.getParcelable(PickFacesActivity.FACE_SET_TAG)
         eigenFaces = EigenFaces(faceSet.path)
         eigenFaces.readImagesFromDir()
+
+
         doAsync {
             eigenFaces.trainModel()
-            eigenFaces.runTest()
+            val id = eigenFaces.runTest()
+            runOnUiThread { showResults(id) }
         }
-
     }
 
+
+    fun showResults(id: Int){
+        longToast("Predicated id is $id")
+    }
 
 }
