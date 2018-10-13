@@ -1,4 +1,4 @@
-package com.android.noam.face_detector_example
+package com.android.noam.faceDetectorPart
 
 import android.content.Intent
 import android.os.Bundle

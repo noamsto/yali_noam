@@ -1,4 +1,4 @@
-package com.android.noam.face_detector_example
+package com.android.noam.faceDetectorPart
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -6,11 +6,11 @@ import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.media.ImageReader
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.os.HandlerThread
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
@@ -20,17 +20,17 @@ import android.view.View
 import android.widget.Button
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_image_capture.*
-import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
 
 class ImageCapture : AppCompatActivity() {
-    private val TAG = "ImageCapture"
+
     private lateinit var  takePictureBtn : Button
     private lateinit var textureView : TextureView
 
     companion object {
+        private const val TAG = "ImageCapture"
         private val ORIENTATIONS = SparseIntArray()
         init {
             ORIENTATIONS.append(Surface.ROTATION_0, 90)
@@ -41,10 +41,10 @@ class ImageCapture : AppCompatActivity() {
     }
 
     private lateinit var cameraID: String
-    protected var cameraDevice: CameraDevice? = null
-    protected var cameraCaptureSession: CameraCaptureSession? = null
-    protected lateinit var captureRequest: CaptureRequest
-    protected lateinit var captureRequestBuilder: CaptureRequest.Builder
+    private var cameraDevice: CameraDevice? = null
+    private var cameraCaptureSession: CameraCaptureSession? = null
+    private lateinit var captureRequest: CaptureRequest
+    private lateinit var captureRequestBuilder: CaptureRequest.Builder
     private lateinit var imageDimension: Size
     private lateinit var imageReader: ImageReader
     private lateinit var picFile : File
@@ -143,8 +143,8 @@ class ImageCapture : AppCompatActivity() {
         Log.d(TAG, "Opening Camera.")
         try {
             cameraID = manager.cameraIdList.single {
-                val charateristics = manager.getCameraCharacteristics(it)
-                val facing = charateristics.get(CameraCharacteristics.LENS_FACING)
+                val characteristics = manager.getCameraCharacteristics(it)
+                val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
                 facing == CameraCharacteristics.LENS_FACING_FRONT
             }
             val frontCamCharacteristics = manager.getCameraCharacteristics(cameraID)
@@ -157,7 +157,7 @@ class ImageCapture : AppCompatActivity() {
         }
     }
 
-    protected fun createCameraPreview(){
+    private fun createCameraPreview(){
         try {
             val texture = textureView.surfaceTexture!!
             // Setting Image size to textureView available width.
@@ -196,13 +196,14 @@ class ImageCapture : AppCompatActivity() {
      * still mediaImage is ready to be saved.
      */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        mBackgroundHandler?.post(ImageSaver(it.acquireNextImage(), picFile, rotationValue))
+        mBackgroundHandler?.post(ImageSaver(it.acquireNextImage(), picFile, rotationValue, croppedFaceView))
     }
 
     /**
      * Capture a still picture. This method should be called when we get a response in
      * [.captureCallback] from both [.lockFocus].
      */
+    @Suppress("UNUSED_PARAMETER")
     private fun captureStillPicture(view: View) {
         try {
             if (cameraDevice == null) return
@@ -211,7 +212,7 @@ class ImageCapture : AppCompatActivity() {
             // This is the CaptureRequest.Builder that we use to take a picture.
             val captureBuilder = cameraDevice?.createCaptureRequest(
                     CameraDevice.TEMPLATE_STILL_CAPTURE)?.apply {
-                addTarget(imageReader?.surface)
+                addTarget(imageReader.surface)
 
                 // Sensor orientation is 90 for most devices, or 270 for some devices (eg. Nexus 5X)
                 // We have to take that into account and rotate JPEG properly.
@@ -226,7 +227,6 @@ class ImageCapture : AppCompatActivity() {
             }
 
             val captureCallback = object : CameraCaptureSession.CaptureCallback() {
-
                 override fun onCaptureCompleted(session: CameraCaptureSession,
                                                 request: CaptureRequest,
                                                 result: TotalCaptureResult) {

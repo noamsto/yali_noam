@@ -13,7 +13,18 @@
         android:id="@+id/texture_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/btn_takepicture"/>
+        android:layout_above="@+id/btn_takepicture"
+        />
+
+    <ImageView
+        android:id="@+id/croppedFaceView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@id/texture_view"
+        android:layout_below="@+id/texture_view"
+        android:minHeight="100dp"
+        android:minWidth="100dp"/>
 
     <Button
         android:id="@+id/btn_takepicture"

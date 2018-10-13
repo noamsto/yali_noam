@@ -1,4 +1,4 @@
-package com.android.noam.face_detector_example
+package com.android.noam.faceDetectorPart
 
 import android.graphics.Bitmap
 import com.google.android.gms.tasks.OnFailureListener
@@ -10,11 +10,9 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetector
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 
 
-class FaceDetect(mediaImage:Bitmap, successListener: OnSuccessListener<List<FirebaseVisionFace>>, failureListener: OnFailureListener) {
-
-    private val TAG = "myFaceDetect"
-    var fBImage : FirebaseVisionImage = FirebaseVisionImage.fromBitmap(mediaImage)
-
+class FaceDetect(mediaImage : Bitmap, successListener: OnSuccessListener<List<FirebaseVisionFace>>,
+                 failureListener: OnFailureListener) {
+    private var fBImage : FirebaseVisionImage = FirebaseVisionImage.fromBitmap(mediaImage)
     private val detector : FirebaseVisionFaceDetector
     private val options = FirebaseVisionFaceDetectorOptions.Builder()
             .setModeType(FirebaseVisionFaceDetectorOptions.ACCURATE_MODE)
@@ -23,11 +21,9 @@ class FaceDetect(mediaImage:Bitmap, successListener: OnSuccessListener<List<Fire
             .setMinFaceSize(0.15f)
             .setTrackingEnabled(true)
             .build()!!
-
     init {
         detector = FirebaseVision.getInstance()
                 .getVisionFaceDetector(options)
-
         detector.detectInImage(fBImage).addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener)
     }

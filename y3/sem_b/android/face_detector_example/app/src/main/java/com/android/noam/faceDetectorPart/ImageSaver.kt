@@ -1,17 +1,18 @@
-package com.android.noam.face_detector_example
+package com.android.noam.faceDetectorPart
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.Image
 import android.util.Log
+import android.widget.ImageView
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.ml.vision.face.FirebaseVisionFace
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import kotlin.math.absoluteValue
+import kotlin.math.max
 
 /**
  * Saves a JPEG [Image] into the specified [File].
@@ -26,13 +27,14 @@ internal class ImageSaver(
          * The file we save the mediaImage into.
          */
         private val file: File,
+        private val rotation: Int,
+        private val croppedFaceViewer : ImageView
 
-        private val rotation: Int
 ) : Runnable, OnSuccessListener<List<FirebaseVisionFace>>, OnFailureListener {
     private val scaleFactor = 120 //face will be (scaleFactor)x(scaleFactor)
-    lateinit var bitMapImage: Bitmap
-    lateinit var croppedFace: Bitmap
-    lateinit var scaledFace: Bitmap
+    private lateinit var bitMapImage: Bitmap
+    private lateinit var croppedFace: Bitmap
+    private lateinit var scaledFace: Bitmap
 
     override fun run() {
         convertToBmpAndRotate()
@@ -55,8 +57,9 @@ internal class ImageSaver(
         p0.forEach {
             Log.d(TAG, "Detected Face: in this bounds ${it.boundingBox}")
             val bounds = it.boundingBox
-            croppedFace = Bitmap.createBitmap(bitMapImage, bounds.left.absoluteValue, bounds.top.absoluteValue, bounds.width(), bounds.height())
+            croppedFace = Bitmap.createBitmap(bitMapImage, max(bounds.left, 0), max(0, bounds.top), bounds.width(), bounds.height())
             scaledFace = Bitmap.createScaledBitmap(croppedFace, scaleFactor, scaleFactor, false)
+            croppedFaceViewer.setImageBitmap(scaledFace)
             writeToFile()
             return
         }
@@ -93,17 +96,21 @@ internal class ImageSaver(
     }
 
     private fun rotateImage(img: Bitmap, degree: Int): Bitmap {
-        val matrix = Matrix()
-        matrix.postRotate(degree.toFloat())
-        val rotatedImg = Bitmap.createBitmap(img, 0, 0, img.width, img.height, matrix, true)
+        val mirrorMatrix = Matrix()
+        mirrorMatrix.preScale(-1.0f, 1.0f)
+        val rotateMatrix = Matrix()
+        rotateMatrix.postRotate(degree.toFloat())
+        val rotatedImg = Bitmap.createBitmap(img, 0, 0, img.width, img.height, rotateMatrix, true)
+        val mirroredImg = Bitmap.createBitmap(rotatedImg, 0, 0, rotatedImg.width, rotatedImg.height, mirrorMatrix, true)
         img.recycle()
-        return rotatedImg
+        rotatedImg.recycle()
+        return mirroredImg
     }
 
     companion object {
         /**
          * Tag for the [Log].
          */
-        private val TAG = "ImageSaver"
+        private const val TAG = "ImageSaver"
     }
 }

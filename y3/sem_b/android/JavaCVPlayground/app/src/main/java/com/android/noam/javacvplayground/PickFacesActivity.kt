@@ -19,21 +19,27 @@ import com.livinglifetechway.k4kotlin.longToast
 import kotlinx.android.synthetic.main.activity_pick_faces.*
 import kotlinx.android.synthetic.main.grid_item.view.*
 import java.io.File
+import android.support.v4.content.res.TypedArrayUtils.getResourceId
+import android.content.res.TypedArray
+import android.support.v7.widget.TintTypedArray.obtainStyledAttributes
+import com.android.noam.javacvplayground.CreateNewSetActivity.Companion.ROOT_DIR_TAG
+import org.jetbrains.anko.backgroundResource
+
 
 class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
 
     companion object {
         const val FACE_SET_TAG = "FaceSetTag"
+        private const val TAG = "PickFacesActivity"
     }
-
-    private val TAG = "PickFacesActivity"
     private val faceSets: ArrayList<FacesSet> = ArrayList()
     private lateinit var facesSetAdapter: FacesSetAdapter
+    private lateinit var facesDir : File
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pick_faces)
-
+        facesDir = getPublicPicturesStorageDir()
         val facesSetGrid: GridView = SetsGrid
         facesSetGrid.onItemClickListener = this
         facesSetAdapter = FacesSetAdapter(this, faceSets)
@@ -47,7 +53,7 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
         readFacesSets()
     }
 
-    private fun getPublicPicturesStorageDir(): File? {
+    private fun getPublicPicturesStorageDir(): File {
         // Get the directory for the user's public pictures directory.
         val file = File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), "Faces")
@@ -58,10 +64,10 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
     }
 
     private fun readFacesSets() {
-        val picDir = getPublicPicturesStorageDir()
-        if (picDir != null) {
-            Log.d(TAG, "Searching for all faces sets in ${picDir.absolutePath}")
-            for (facesSet in picDir.listFiles()) {
+        facesDir = getPublicPicturesStorageDir()
+        if (facesDir != null) {
+            Log.d(TAG, "Searching for all faces sets in ${facesDir.absolutePath}")
+            for (facesSet in facesDir.listFiles()) {
                 var numOfSamples = 0
                 var peopleCount = 0
                 facesSet.walkTopDown().forEach {
@@ -88,6 +94,9 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
         val faceSet = faceSets[position]
         if (faceSet.isNew) {
             longToast("Let's Create a new Set.")
+            val createNewSetIntent = Intent(this, CreateNewSetActivity::class.java)
+            createNewSetIntent.putExtra(ROOT_DIR_TAG, facesDir)
+            startActivity(createNewSetIntent)
             return
         }
         if (faceSet.isEmpty()){
@@ -106,16 +115,22 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
                 val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
                 inflater.inflate(R.layout.grid_item, null)
             }
+
             val faceSet = facesSets[position]
             setGridItem.setName.text = faceSet.name
+
             setGridItem.peopleCount.text = if (faceSet.peopleCount != 0){
+                setGridItem.peopleCount.visibility = View.VISIBLE
                 "Peoples: ${faceSet.peopleCount}"
             }else{
+                setGridItem.peopleCount.visibility = View.INVISIBLE
                 ""
             }
             setGridItem.facesCount.text = if ( faceSet.samples != 0 ) {
+                setGridItem.facesCount.visibility = View.VISIBLE
                 "Samples: ${faceSet.samples}"
             }else {
+                setGridItem.facesCount.visibility = View.INVISIBLE
                 ""
             }
             return setGridItem
@@ -127,36 +142,5 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
     }
 }
 
-data class FacesSet(val name: String, val path: String, val peopleCount: Int, val samples: Int,
-                    val isNew: Boolean = false) : Parcelable {
 
-    constructor(parcel: Parcel) : this(
-            parcel.readString(),
-            parcel.readString(),
-            parcel.readInt(),
-            parcel.readInt())
-
-    fun isEmpty() = (peopleCount == 0 || samples == 0)
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(name)
-        parcel.writeString(path)
-        parcel.writeInt(peopleCount)
-        parcel.writeInt(samples)
-    }
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    companion object CREATOR : Parcelable.Creator<FacesSet> {
-        override fun createFromParcel(parcel: Parcel): FacesSet {
-            return FacesSet(parcel)
-        }
-
-        override fun newArray(size: Int): Array<FacesSet?> {
-            return arrayOfNulls(size)
-        }
-    }
-}
 

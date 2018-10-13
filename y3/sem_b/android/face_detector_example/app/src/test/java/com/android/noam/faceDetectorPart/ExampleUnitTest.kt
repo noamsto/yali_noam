@@ -1,4 +1,4 @@
-package com.android.noam.face_detector_example
+package com.android.noam.faceDetectorPart
 
 import org.junit.Test
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.android.noam.face_detector_example">
+    package="com.android.noam.faceDetectorPart">
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -14,7 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name="com.android.noam.faceDetectorPart.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,7 +27,7 @@
             android:value="face" />
         <!-- To use multiple models: android:value="face,model2,model3" -->
 
-        <activity android:name=".ImageCapture"></activity>
+        <activity android:name="com.android.noam.faceDetectorPart.ImageCapture"></activity>
     </application>
 
 </manifest>

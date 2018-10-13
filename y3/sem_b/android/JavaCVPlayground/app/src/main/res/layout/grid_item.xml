@@ -2,12 +2,16 @@
 <android.support.v7.widget.LinearLayoutCompat
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:layout_margin="10dp"
+    android:elevation="10dp"
+    >
+
+
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_height="50dp"
         android:hint="Set Name"
         android:textSize="20sp"
         android:textAlignment="center"
@@ -16,18 +20,16 @@
         />
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_height="50dp"
         android:hint="Peoples: 10"
         android:textSize="20sp"
         android:textAlignment="center"
         android:layout_margin="5dp"
         android:id="@+id/peopleCount"
         />
-        <TextView
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_height="50dp"
         android:hint="Samples: 100"
         android:textSize="20sp"
         android:textAlignment="center"
