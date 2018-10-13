@@ -15,10 +15,10 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.BaseAdapter
 import android.widget.GridView
+import com.livinglifetechway.k4kotlin.longToast
 import kotlinx.android.synthetic.main.activity_pick_faces.*
 import kotlinx.android.synthetic.main.grid_item.view.*
 import java.io.File
-
 
 class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
 
@@ -27,7 +27,6 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
     }
 
     private val TAG = "PickFacesActivity"
-
     private val faceSets: ArrayList<FacesSet> = ArrayList()
     private lateinit var facesSetAdapter: FacesSetAdapter
 
@@ -79,12 +78,23 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
                         "consisting of ${faceSet.peopleCount} Peoples and  ${faceSet.samples} samples")
             }
         }
+        val newSet = FacesSet("Create new set.", "", 0,0, isNew = true)
+        faceSets.add(newSet)
         facesSetAdapter.notifyDataSetChanged()
     }
 
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         val faceDetectorIntent = Intent(this, FaceDetectorActivity::class.java)
-        faceDetectorIntent.putExtra(FACE_SET_TAG, faceSets[position])
+        val faceSet = faceSets[position]
+        if (faceSet.isNew) {
+            longToast("Let's Create a new Set.")
+            return
+        }
+        if (faceSet.isEmpty()){
+            longToast("FaceSet is Empty, please fill it.")
+            return
+        }
+        faceDetectorIntent.putExtra(FACE_SET_TAG, faceSet)
         startActivity(faceDetectorIntent)
     }
 
@@ -98,8 +108,16 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
             }
             val faceSet = facesSets[position]
             setGridItem.setName.text = faceSet.name
-            setGridItem.peopleCount.text = "Peoples: ${faceSet.peopleCount}"
-            setGridItem.facesCount.text = "Samples: ${faceSet.samples}"
+            setGridItem.peopleCount.text = if (faceSet.peopleCount != 0){
+                "Peoples: ${faceSet.peopleCount}"
+            }else{
+                ""
+            }
+            setGridItem.facesCount.text = if ( faceSet.samples != 0 ) {
+                "Samples: ${faceSet.samples}"
+            }else {
+                ""
+            }
             return setGridItem
         }
 
@@ -109,12 +127,16 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
     }
 }
 
-data class FacesSet(val name: String, val path: String, val peopleCount: Int, val samples: Int) : Parcelable {
+data class FacesSet(val name: String, val path: String, val peopleCount: Int, val samples: Int,
+                    val isNew: Boolean = false) : Parcelable {
+
     constructor(parcel: Parcel) : this(
             parcel.readString(),
             parcel.readString(),
             parcel.readInt(),
             parcel.readInt())
+
+    fun isEmpty() = (peopleCount == 0 || samples == 0)
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)

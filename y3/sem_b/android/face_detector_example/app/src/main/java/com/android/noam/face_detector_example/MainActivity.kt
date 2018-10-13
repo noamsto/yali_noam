@@ -9,7 +9,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val pickFacesIntent = Intent(this, ImageCapture::class.java)
-        startActivity(pickFacesIntent)
+        val captureFace = Intent(this, ImageCapture::class.java)
+        startActivity(captureFace)
     }
 }

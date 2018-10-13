@@ -1,11 +1,9 @@
 package com.android.noam.javacvplayground
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.doAsyncResult
 import org.jetbrains.anko.longToast
-import org.jetbrains.anko.runOnUiThread
 
 class FaceDetectorActivity : AppCompatActivity() {
 

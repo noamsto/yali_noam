@@ -28,7 +28,6 @@
         android:text="Select Faces Set"
         android:layout_weight="1"
         android:id="@+id/selectSetBTN"
-        android:clickable="false"
         android:onClick="pickFacesSet"/>
 
 </android.support.v7.widget.LinearLayoutCompat>

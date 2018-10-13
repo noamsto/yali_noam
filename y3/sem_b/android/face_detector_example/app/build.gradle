@@ -35,6 +35,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:16.0.4'
     implementation 'com.google.firebase:firebase-ml-common:16.1.4'
     implementation 'com.github.quickpermissions:quickpermissions-kotlin:0.2.0'
+    implementation "org.jetbrains.anko:anko:$anko_version"
 }
 
 apply plugin: 'com.google.gms.google-services'

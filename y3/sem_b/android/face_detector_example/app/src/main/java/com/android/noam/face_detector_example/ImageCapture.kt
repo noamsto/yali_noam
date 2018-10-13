@@ -21,6 +21,7 @@ import android.widget.Button
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_image_capture.*
 import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
 
@@ -53,8 +54,6 @@ class ImageCapture : AppCompatActivity() {
     private var mBackgroundThread : HandlerThread? = null
     private var rotationValue = 0
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_capture)
@@ -78,10 +77,7 @@ class ImageCapture : AppCompatActivity() {
         sampleDir = File(yaliNoamDir, "Gal3")
         if (! sampleDir.exists() )
             sampleDir.mkdir()
-
         picFile = File(sampleDir, "$faceInd.jpg")
-
-
     }
 
     private val textureListener = object : TextureView.SurfaceTextureListener{
@@ -200,14 +196,14 @@ class ImageCapture : AppCompatActivity() {
      * still mediaImage is ready to be saved.
      */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        mBackgroundHandler?.post(ImageSaver(it.acquireNextImage(), picFile))
+        mBackgroundHandler?.post(ImageSaver(it.acquireNextImage(), picFile, rotationValue))
     }
 
     /**
      * Capture a still picture. This method should be called when we get a response in
      * [.captureCallback] from both [.lockFocus].
      */
-    fun captureStillPicture(view: View) {
+    private fun captureStillPicture(view: View) {
         try {
             if (cameraDevice == null) return
             val rotation = windowManager.defaultDisplay.rotation
@@ -237,6 +233,7 @@ class ImageCapture : AppCompatActivity() {
                     Log.d(TAG, picFile.toString())
                     cameraCaptureSession?.setRepeatingRequest(captureRequest, null,
                             mBackgroundHandler)
+                    toast("Saved face under:${picFile.absolutePath}")
                     picFile = File(sampleDir, "${++faceInd}.jpg")
                 }
             }
@@ -244,7 +241,6 @@ class ImageCapture : AppCompatActivity() {
             cameraCaptureSession?.apply {
                 stopRepeating()
                 abortCaptures()
-
                 capture(captureBuilder?.build(), captureCallback, null)
             }
         } catch (e: CameraAccessException) {
