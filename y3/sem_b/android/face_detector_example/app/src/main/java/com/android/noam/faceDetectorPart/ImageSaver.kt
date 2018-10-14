@@ -13,6 +13,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Saves a JPEG [Image] into the specified [File].
@@ -28,7 +29,8 @@ internal class ImageSaver(
          */
         private val file: File,
         private val rotation: Int,
-        private val croppedFaceViewer : ImageView
+        private val croppedFaceViewer : ImageView,
+        private val detectFaceSuccessListener: OnSuccessListener<String>
 
 ) : Runnable, OnSuccessListener<List<FirebaseVisionFace>>, OnFailureListener {
     private val scaleFactor = 120 //face will be (scaleFactor)x(scaleFactor)
@@ -57,10 +59,16 @@ internal class ImageSaver(
         p0.forEach {
             Log.d(TAG, "Detected Face: in this bounds ${it.boundingBox}")
             val bounds = it.boundingBox
+            if( (bounds.left + bounds.width() > bitMapImage.width) || (bounds.top + bounds.height() > bitMapImage.height) ){
+                Log.d(TAG,  "Face detection failed.")
+                image.close()
+                return
+            }
             croppedFace = Bitmap.createBitmap(bitMapImage, max(bounds.left, 0), max(0, bounds.top), bounds.width(), bounds.height())
             scaledFace = Bitmap.createScaledBitmap(croppedFace, scaleFactor, scaleFactor, false)
             croppedFaceViewer.setImageBitmap(scaledFace)
             writeToFile()
+            detectFaceSuccessListener.onSuccess("Face cropped and saved.")
             return
         }
 

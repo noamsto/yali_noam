@@ -18,13 +18,18 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.widget.Button
+import com.google.android.gms.tasks.OnSuccessListener
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_image_capture.*
 import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
 
-class ImageCapture : AppCompatActivity() {
+class ImageCapture : AppCompatActivity(), OnSuccessListener<String> {
+    override fun onSuccess(p0: String?) {
+        toast("Saved face under:${picFile.absolutePath}")
+        picFile = File(sampleDir, "${++faceInd}.jpg")
+    }
 
     private lateinit var  takePictureBtn : Button
     private lateinit var textureView : TextureView
@@ -196,7 +201,7 @@ class ImageCapture : AppCompatActivity() {
      * still mediaImage is ready to be saved.
      */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        mBackgroundHandler?.post(ImageSaver(it.acquireNextImage(), picFile, rotationValue, croppedFaceView))
+        mBackgroundHandler?.post(ImageSaver(it.acquireNextImage(), picFile, rotationValue, croppedFaceView, this))
     }
 
     /**
@@ -233,8 +238,6 @@ class ImageCapture : AppCompatActivity() {
                     Log.d(TAG, picFile.toString())
                     cameraCaptureSession?.setRepeatingRequest(captureRequest, null,
                             mBackgroundHandler)
-                    toast("Saved face under:${picFile.absolutePath}")
-                    picFile = File(sampleDir, "${++faceInd}.jpg")
                 }
             }
 

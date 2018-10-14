@@ -8,16 +8,23 @@
     android:orientation="vertical"
     android:id="@+id/swipeLayout">
 
-
-    <GridView
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/class_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:numColumns="3"
-        android:padding="7dp"
-        android:id="@+id/SetsGrid"
-        android:layout_margin="7dp"
-        >
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical">
 
-    </GridView>
+    </android.support.v7.widget.RecyclerView>
+
+    <!--<GridView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:numColumns="3"-->
+        <!--android:padding="7dp"-->
+        <!--android:id="@+id/SetsGrid"-->
+        <!--android:layout_margin="7dp"-->
+        <!--&gt;-->
+
+    <!--</GridView>-->
 
 </android.support.v4.widget.SwipeRefreshLayout>

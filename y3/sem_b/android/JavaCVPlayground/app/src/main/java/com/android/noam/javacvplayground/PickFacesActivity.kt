@@ -1,32 +1,25 @@
 package com.android.noam.javacvplayground
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
-import android.os.Parcel
-import android.os.Parcelable
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.BaseAdapter
-import android.widget.GridView
+import com.android.noam.javacvplayground.CreateNewSetActivity.Companion.ROOT_DIR_TAG
 import com.livinglifetechway.k4kotlin.longToast
 import kotlinx.android.synthetic.main.activity_pick_faces.*
-import kotlinx.android.synthetic.main.grid_item.view.*
+import kotlinx.android.synthetic.main.card_view.view.*
+import org.jetbrains.anko.toast
 import java.io.File
-import android.support.v4.content.res.TypedArrayUtils.getResourceId
-import android.content.res.TypedArray
-import android.support.v7.widget.TintTypedArray.obtainStyledAttributes
-import com.android.noam.javacvplayground.CreateNewSetActivity.Companion.ROOT_DIR_TAG
-import org.jetbrains.anko.backgroundResource
 
 
-class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
+class PickFacesActivity : AppCompatActivity() {
 
     companion object {
         const val FACE_SET_TAG = "FaceSetTag"
@@ -40,10 +33,14 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pick_faces)
         facesDir = getPublicPicturesStorageDir()
-        val facesSetGrid: GridView = SetsGrid
-        facesSetGrid.onItemClickListener = this
-        facesSetAdapter = FacesSetAdapter(this, faceSets)
-        facesSetGrid.adapter = facesSetAdapter
+        val faceSetRecycler: RecyclerView = class_recycler_view
+        facesSetAdapter = FacesSetAdapter(this, faceSets, this)
+        faceSetRecycler.layoutManager = GridLayoutManager(this,3)
+        faceSetRecycler.adapter = facesSetAdapter
+
+
+
+
         swipeLayout.setOnRefreshListener {
             faceSets.clear()
             readFacesSets()
@@ -89,58 +86,96 @@ class PickFacesActivity : AppCompatActivity(), AdapterView.OnItemClickListener {
         facesSetAdapter.notifyDataSetChanged()
     }
 
-    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        val faceDetectorIntent = Intent(this, FaceDetectorActivity::class.java)
-        val faceSet = faceSets[position]
+    fun setSelected ( faceSet : FacesSet) {
         if (faceSet.isNew) {
-            longToast("Let's Create a new Set.")
+            toast("Let's Create a new Set.")
             val createNewSetIntent = Intent(this, CreateNewSetActivity::class.java)
             createNewSetIntent.putExtra(ROOT_DIR_TAG, facesDir)
             startActivity(createNewSetIntent)
             return
         }
         if (faceSet.isEmpty()){
-            longToast("FaceSet is Empty, please fill it.")
+            toast("FaceSet is Empty, please fill it.")
             return
         }
+        val faceDetectorIntent = Intent(this, FaceDetectorActivity::class.java)
         faceDetectorIntent.putExtra(FACE_SET_TAG, faceSet)
         startActivity(faceDetectorIntent)
     }
 
-    class FacesSetAdapter(private val activity: Activity, private val facesSets: ArrayList<FacesSet>) : BaseAdapter() {
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-            val setGridItem = if (convertView != null) {
-                convertView
-            } else {
-                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                inflater.inflate(R.layout.grid_item, null)
-            }
-
-            val faceSet = facesSets[position]
-            setGridItem.setName.text = faceSet.name
-
-            setGridItem.peopleCount.text = if (faceSet.peopleCount != 0){
-                setGridItem.peopleCount.visibility = View.VISIBLE
-                "Peoples: ${faceSet.peopleCount}"
-            }else{
-                setGridItem.peopleCount.visibility = View.INVISIBLE
-                ""
-            }
-            setGridItem.facesCount.text = if ( faceSet.samples != 0 ) {
-                setGridItem.facesCount.visibility = View.VISIBLE
-                "Samples: ${faceSet.samples}"
-            }else {
-                setGridItem.facesCount.visibility = View.INVISIBLE
-                ""
-            }
-            return setGridItem
+    class FacesSetAdapter(private val context: Context,
+                          private val facesSets: ArrayList<FacesSet>,
+                          private val pickFacesActivity: PickFacesActivity) : RecyclerView.Adapter<ViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            return ViewHolder(LayoutInflater.from(context).inflate(R.layout.card_view,parent ,false))
         }
 
-        override fun getItem(position: Int): Any = facesSets[position]
-        override fun getItemId(position: Int): Long = position.toLong()
-        override fun getCount(): Int = facesSets.size
+        override fun getItemCount() = facesSets.size
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val faceSet = facesSets[position]
+            holder.pickFacesActivity = pickFacesActivity
+            holder.currentItem = faceSet
+            holder.setName.text = faceSet.name
+            holder.peopleCount.text = if (faceSet.peopleCount != 0){
+                holder.peopleCount.visibility = View.VISIBLE
+                "Peoples: ${faceSet.peopleCount}"
+            }else{
+                holder.peopleCount.visibility = View.INVISIBLE
+                ""
+            }
+            holder.facesCount.text = if ( faceSet.samples != 0 ) {
+                holder.facesCount.visibility = View.VISIBLE
+                "Samples: ${faceSet.samples}"
+            }else {
+                holder.facesCount.visibility = View.INVISIBLE
+                ""
+            }
+        }
+
+//        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+//            val setGridItem = if (convertView != null) {
+//                convertView
+//            } else {
+//                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+//                inflater.inflate(R.layout.card_view, null)
+//            }
+//
+//            val faceSet = facesSets[position]
+//            setGridItem.setName.text = faceSet.name
+//
+//            setGridItem.peopleCount.text = if (faceSet.peopleCount != 0){
+//                setGridItem.peopleCount.visibility = View.VISIBLE
+//                "Peoples: ${faceSet.peopleCount}"
+//            }else{
+//                setGridItem.peopleCount.visibility = View.INVISIBLE
+//                ""
+//            }
+//            setGridItem.facesCount.text = if ( faceSet.samples != 0 ) {
+//                setGridItem.facesCount.visibility = View.VISIBLE
+//                "Samples: ${faceSet.samples}"
+//            }else {
+//                setGridItem.facesCount.visibility = View.INVISIBLE
+//                ""
+//            }
+//            return setGridItem
+//        }
+
     }
+
 }
 
+class ViewHolder(view: View): RecyclerView.ViewHolder(view){
+    val setName = view.setName
+    val peopleCount = view.peopleCount
+    val facesCount = view.facesCount
+    lateinit var currentItem : FacesSet
+    lateinit var pickFacesActivity: PickFacesActivity
+    init {
+        view.setOnClickListener {
+            pickFacesActivity.setSelected(currentItem)
+        }
+    }
+}
 
 

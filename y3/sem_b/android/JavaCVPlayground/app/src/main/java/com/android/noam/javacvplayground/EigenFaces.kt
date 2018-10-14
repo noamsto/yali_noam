@@ -9,9 +9,7 @@ import org.bytedeco.javacpp.opencv_face.EigenFaceRecognizer
 import org.bytedeco.javacpp.opencv_imgcodecs
 import org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE
 import org.bytedeco.javacpp.opencv_imgcodecs.imread
-import org.jetbrains.anko.doAsync
 import java.io.File
-import java.lang.RuntimeException
 import java.nio.IntBuffer
 import java.util.*
 
