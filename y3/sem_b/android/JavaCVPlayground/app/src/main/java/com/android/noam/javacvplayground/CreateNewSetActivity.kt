@@ -21,7 +21,7 @@ class CreateNewSetActivity : AppCompatActivity(), AdapterView.OnItemClickListene
         const val ROOT_DIR_TAG = "ROOT_DIR_TAG"
         const val TAG = "CreateNewSetActivity"
     }
-    var studentList : ArrayList<Student> = ArrayList()
+//    var studentSetList : ArrayList<StudentSet> = ArrayList()
     lateinit var rootDir : File
     lateinit var classDir : File
     lateinit var listViewAdapter: BaseAdapter
@@ -35,86 +35,86 @@ class CreateNewSetActivity : AppCompatActivity(), AdapterView.OnItemClickListene
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_new_set)
         rootDir = intent.extras.getSerializable(ROOT_DIR_TAG) as File
-
-        student_list_view.onItemClickListener = this
-        listViewAdapter = StudentsAdapter(this, studentList)
-        student_list_view.adapter = listViewAdapter
-        student_list_view.itemsCanFocus = false
+//
+//        student_list_view.onItemClickListener = this
+////        listViewAdapter = StudentsSetAdapter(this, studentSetList)
+//        student_list_view.adapter = listViewAdapter
+//        student_list_view.itemsCanFocus = false
 
     }
-
-    fun submitNewStudent(view: View){
-        val newStudentName = student_name_ET.text.toString()
-        if (newStudentName.isNotBlank()){
-            createNewStudentDir(newStudentName)
-            student_name_ET.setText("")
-        }
-    }
-
-    private fun createNewStudentDir(newStudentName: String) {
-        val studentID = studentList.lastIndex.plus(1)
-        val studentDir = File(classDir, "$newStudentName$studentID")
-        if (!studentDir.exists()){
-            Log.d(TAG, "Creating New Student dir: ${studentDir.absolutePath}" )
-            studentDir.mkdir()
-            studentList.add(Student(newStudentName))
-            listViewAdapter.notifyDataSetChanged()
-        }else{
-            toast("Student dir:${studentDir.absolutePath} already exists.")
-        }
-    }
-
-    fun submitClassName(view: View){
-        val newClassName = class_name.text.toString()
-        if (newClassName.isNotBlank())
-        {
-            if (oldClassName != newClassName)
-            changeOrCreateClassDir(oldClassName, newClassName)
-            oldClassName = newClassName
-            new_student_area.visibility = View.VISIBLE
-        }else
-            toast("Class name Cant be empty.")
-    }
-
-    private fun changeOrCreateClassDir(oldName: String, newName : String) {
-        val oldDir = File(rootDir, oldName)
-        val newDir = File(rootDir, newName)
-        if (!newDir.exists() && (oldName.isBlank() || !oldDir.exists())){
-            Log.d(TAG,"Creating new class dir: ${newDir.absolutePath}")
-            newDir.mkdir()
-            student_list_view.itemsCanFocus = true
-        }else if ( !newDir.exists() ){
-            Log.d(TAG, "Renaming class dir from:${oldDir.absolutePath} to old")
-            oldDir.renameTo(newDir)
-        }else{
-            toast("Can't create Class, This Class Already Exists!")
-            return
-        }
-        classDir = newDir
-    }
-
-
-    class StudentsAdapter(private val activity: Activity, private val studentsList: ArrayList<Student>) : BaseAdapter() {
-        override fun getItem(p0: Int) = studentsList[p0]
-
-        override fun getItemId(p0: Int) = p0.toLong()
-
-        override fun getCount() = studentsList.size
-
-        override fun getView(p0: Int, p1: View?, p2: ViewGroup?): View {
-            val studentListItem = if (p1 != null) {
-                p1
-            } else {
-                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                inflater.inflate(R.layout.list_view_student_item, null)
-            }
-            val student = studentsList[p0]
-            studentListItem.student_name.text = student.name
-            studentListItem.num_of_samples.text = "${student.samplesCount} Samples"
-            return studentListItem
-        }
-    }
-
-    data class Student (val name: String, var samplesCount : Int = 0)
+//
+//    fun submitNewStudent(view: View){
+//        val newStudentName = student_name_ET.text.toString()
+//        if (newStudentName.isNotBlank()){
+//            createNewStudentDir(newStudentName)
+//            student_name_ET.setText("")
+//        }
+//    }
+//
+//    private fun createNewStudentDir(newStudentName: String) {
+//        val studentID = studentSetList.lastIndex.plus(1)
+//        val studentDir = File(classDir, "$newStudentName$studentID")
+//        if (!studentDir.exists()){
+//            Log.d(TAG, "Creating New StudentSet dir: ${studentDir.absolutePath}" )
+//            studentDir.mkdir()
+//            studentSetList.add(StudentSet(newStudentName))
+//            listViewAdapter.notifyDataSetChanged()
+//        }else{
+//            toast("StudentSet dir:${studentDir.absolutePath} already exists.")
+//        }
+//    }
+//
+//    fun submitClassName(view: View){
+//        val newClassName = class_name.text.toString()
+//        if (newClassName.isNotBlank())
+//        {
+//            if (oldClassName != newClassName)
+//            changeOrCreateClassDir(oldClassName, newClassName)
+//            oldClassName = newClassName
+//            new_student_area.visibility = View.VISIBLE
+//        }else
+//            toast("Class name Cant be empty.")
+//    }
+//
+//    private fun changeOrCreateClassDir(oldName: String, newName : String) {
+//        val oldDir = File(rootDir, oldName)
+//        val newDir = File(rootDir, newName)
+//        if (!newDir.exists() && (oldName.isBlank() || !oldDir.exists())){
+//            Log.d(TAG,"Creating new class dir: ${newDir.absolutePath}")
+//            newDir.mkdir()
+//            student_list_view.itemsCanFocus = true
+//        }else if ( !newDir.exists() ){
+//            Log.d(TAG, "Renaming class dir from:${oldDir.absolutePath} to old")
+//            oldDir.renameTo(newDir)
+//        }else{
+//            toast("Can't create Class, This Class Already Exists!")
+//            return
+//        }
+//        classDir = newDir
+//    }
+//
+//
+//    class StudentsSetAdapter(private val activity: Activity, private val studentsList: ArrayList<StudentSet>) : BaseAdapter() {
+//        override fun getItem(p0: Int) = studentsList[p0]
+//
+//        override fun getItemId(p0: Int) = p0.toLong()
+//
+//        override fun getCount() = studentsList.size
+//
+//        override fun getView(p0: Int, p1: View?, p2: ViewGroup?): View {
+//            val studentListItem = if (p1 != null) {
+//                p1
+//            } else {
+//                val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+//                inflater.inflate(R.layout.list_view_student_item, null)
+//            }
+//            val student = studentsList[p0]
+//            studentListItem.student_name.text = student.name
+//            studentListItem.num_of_samples.text = "${student.samplesCount} Samples"
+//            return studentListItem
+//        }
+//    }
+//
+//    data class StudentSet (val name: String, var samplesCount : Int = 0)
 }
 

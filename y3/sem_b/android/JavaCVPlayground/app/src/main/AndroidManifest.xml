@@ -26,7 +26,8 @@
             android:value="face" />
 
         <activity android:name=".FaceDetectorActivity" />
-        <activity android:name=".CreateNewSetActivity"></activity>
+        <activity android:name=".CreateNewSetActivity" />
+        <activity android:name=".ManageStudentsActivity"></activity>
     </application>
 
 </manifest>

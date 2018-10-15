@@ -20,6 +20,18 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_weight="1"/>
 
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:textSize="30sp"
+        android:text="Manage students"
+        android:layout_weight="1"
+        android:id="@+id/manage_students"
+        android:onClick="startManageStudentsActivity"/>
+
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="0dp"

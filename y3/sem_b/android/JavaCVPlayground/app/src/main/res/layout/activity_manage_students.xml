@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ManageStudentsActivity"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/new_student_area"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        >
+
+        <EditText
+            android:id="@+id/student_name_ET"
+            android:hint="Student Name"
+            android:layout_width="0dp"
+            android:layout_weight="2"
+            android:layout_height="match_parent"
+            android:textAlignment="center"
+            android:layout_margin="7dp"
+            android:textSize="20sp"
+            android:imeOptions="actionDone"
+            android:lines="1"
+            />
+
+        <Button
+            android:id="@+id/add_student_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Submit"
+            android:textSize="20sp"
+            android:onClick="submitNewStudent"
+            android:layout_margin="7dp"
+            />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/student_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4"
+        android:isScrollContainer="false"
+        >
+    </ListView>
+
+</LinearLayout>
