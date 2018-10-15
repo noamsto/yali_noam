@@ -23,7 +23,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 
-    fun startManageStudentsActivity(view : View){
+    fun startManageStudentsActivity(view : View) = runWithPermissions(
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE)  {
         val manageStudentsIntent = Intent(this, ManageStudentsActivity::class.java)
         if (rootDir == null)
             initAppDir()
@@ -33,8 +34,11 @@ class MainActivity : AppCompatActivity() {
 
     fun pickFacesSet(view: View) =runWithPermissions(
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE) {
-        val pickFacesIntent = Intent(this, PickFacesActivity::class.java)
-        startActivity(pickFacesIntent)
+        val selectClassIntent = Intent(this, SelectClassActivity::class.java)
+        if (rootDir == null)
+            initAppDir()
+        selectClassIntent.putExtra(APP_DIR_NAME, rootDir)
+        startActivity(selectClassIntent)
 
     }
 

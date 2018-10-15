@@ -19,14 +19,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PickFacesActivity" />
+        <activity android:name=".SelectClassActivity" />
 
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
             android:value="face" />
 
         <activity android:name=".FaceDetectorActivity" />
-        <activity android:name=".CreateNewSetActivity" />
+        <activity android:name=".CreateNewClassActivity" />
         <activity android:name=".ManageStudentsActivity"></activity>
     </application>
 

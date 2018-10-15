@@ -174,7 +174,7 @@ class ImageCapture : AppCompatActivity(), OnSuccessListener<String> {
             val aspectRatio = imageDimension.width/imageDimension.height
             val width = 480
             imageReader = ImageReader.newInstance(width, width/aspectRatio,
-                    ImageFormat.JPEG, /*maxImages*/ 2).apply {
+                    ImageFormat.JPEG, /*maxImages*/ 10).apply {
                 setOnImageAvailableListener(onImageAvailableListener, mBackgroundHandler)
             }
             cameraDevice!!.createCaptureSession(Arrays.asList(surface, imageReader.surface),  object : CameraCaptureSession.StateCallback(){

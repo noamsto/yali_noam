@@ -35,15 +35,6 @@
             android:layout_margin="5dp"
             android:id="@+id/peopleCount"
             />
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Samples: 100"
-            android:textSize="18sp"
-            android:textAlignment="center"
-            android:layout_margin="5dp"
-            android:id="@+id/facesCount"
-            />
 
     </LinearLayout>
 

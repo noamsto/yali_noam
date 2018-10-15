@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-import kotlinx.android.synthetic.main.activity_create_new_set.*
 import kotlinx.android.synthetic.main.activity_manage_students.*
 import kotlinx.android.synthetic.main.list_view_student_item.view.*
 import org.jetbrains.anko.toast
@@ -18,7 +17,8 @@ import java.io.File
 class ManageStudentsActivity : AppCompatActivity() {
 
     companion object {
-        const val TAG = "CreateNewSetActivity"
+        const val TAG = "CreateNewClassActivity"
+        const val STUDENTS_DIR = "samples"
     }
 
     var studentSetList: ArrayList<StudentSet> = ArrayList()
@@ -36,9 +36,9 @@ class ManageStudentsActivity : AppCompatActivity() {
     }
 
     private fun initSamplesDir(rootDir: File) {
-        samplesDir = File(rootDir, "Samples")
+        samplesDir = File(rootDir, STUDENTS_DIR)
         if (!samplesDir.exists()) {
-            Log.d(CreateNewSetActivity.TAG, "Creating New StudentSet dir: ${samplesDir.absolutePath}")
+            Log.d(CreateNewClassActivity.TAG, "Creating New StudentSet dir: ${samplesDir.absolutePath}")
             samplesDir.mkdir()
         }
         readStudentSets()
@@ -75,7 +75,7 @@ class ManageStudentsActivity : AppCompatActivity() {
         val studentID = studentSetList.lastIndex.plus(1)
         val studentDir = File(samplesDir, "$newStudentName$studentID")
         if (!studentDir.exists()) {
-            Log.d(CreateNewSetActivity.TAG, "Creating New StudentSet dir: ${studentDir.absolutePath}")
+            Log.d(CreateNewClassActivity.TAG, "Creating New StudentSet dir: ${studentDir.absolutePath}")
             studentDir.mkdir()
             studentSetList.add(StudentSet(newStudentName, studentDir, studentID, 0))
             studentSetAdapter.notifyDataSetChanged()

@@ -7,22 +7,22 @@ import org.jetbrains.anko.longToast
 
 class FaceDetectorActivity : AppCompatActivity() {
 
-    private lateinit var faceSet : FacesSet
+    private lateinit var classObj : ClassObj
     private lateinit var eigenFaces: EigenFaces
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_face_detector)
-        faceSet = intent.extras.getParcelable(PickFacesActivity.FACE_SET_TAG)
-        eigenFaces = EigenFaces(faceSet.path)
-        eigenFaces.readImagesFromDir()
+        classObj = intent.extras.getSerializable(SelectClassActivity.CLASS_OBJ_TAG) as ClassObj
+//        eigenFaces = EigenFaces(classObj.path)
+//        eigenFaces.readImagesFromDir()
 
 
-        doAsync {
-            eigenFaces.trainModel()
-            val id = eigenFaces.runTest()
-            runOnUiThread { showResults(id) }
-        }
+//        doAsync {
+//            eigenFaces.trainModel()
+//            val id = eigenFaces.runTest()
+//            runOnUiThread { showResults(id) }
+//        }
     }
 
 
