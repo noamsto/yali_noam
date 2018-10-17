@@ -1,4 +1,4 @@
-package com.android.noam.faceDetectorPart
+package com.android.noam.javacvplayground.face.operations
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -18,6 +18,8 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.widget.Button
+import com.android.noam.faceDetectorPart.ImageSaver
+import com.android.noam.javacvplayground.ManageStudentsActivity.Companion.CURRENT_STUDENT_DIR
 import com.google.android.gms.tasks.OnSuccessListener
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_image_capture.*
@@ -25,17 +27,17 @@ import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
 
-class ImageCapture : AppCompatActivity(), OnSuccessListener<String> {
+class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String> {
     override fun onSuccess(p0: String?) {
         toast("Saved face under:${picFile.absolutePath}")
-        picFile = File(sampleDir, "${++faceInd}.jpg")
+        picFile = File(studentDir, "${++faceInd}.jpg")
     }
 
     private lateinit var  takePictureBtn : Button
     private lateinit var textureView : TextureView
 
     companion object {
-        private const val TAG = "ImageCapture"
+        private const val TAG = "ImageCaptureActivity"
         private val ORIENTATIONS = SparseIntArray()
         init {
             ORIENTATIONS.append(Surface.ROTATION_0, 90)
@@ -53,7 +55,7 @@ class ImageCapture : AppCompatActivity(), OnSuccessListener<String> {
     private lateinit var imageDimension: Size
     private lateinit var imageReader: ImageReader
     private lateinit var picFile : File
-    private lateinit var sampleDir : File
+    private lateinit var studentDir : File
     private var faceInd = 0
     private var mBackgroundHandler : Handler? = null
     private var mBackgroundThread : HandlerThread? = null
@@ -61,7 +63,7 @@ class ImageCapture : AppCompatActivity(), OnSuccessListener<String> {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_image_capture)
+        setContentView(com.android.noam.javacvplayground.R.layout.activity_image_capture)
 
         takePictureBtn = btn_takepicture!!
         textureView = texture_view!!
@@ -70,19 +72,11 @@ class ImageCapture : AppCompatActivity(), OnSuccessListener<String> {
             captureStillPicture(it)
         }
 
-        val facesDir = File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "Faces")
-
-
-
-        val yaliNoamDir = File(facesDir, "YaliNoam" )
-        if (! yaliNoamDir.exists() )
-            yaliNoamDir.mkdir()
-
-        sampleDir = File(yaliNoamDir, "Gal3")
-        if (! sampleDir.exists() )
-            sampleDir.mkdir()
-        picFile = File(sampleDir, "$faceInd.jpg")
+        studentDir = intent.extras.get(CURRENT_STUDENT_DIR) as File
+        if (! studentDir.exists() )
+            studentDir.mkdir()
+        faceInd = studentDir.listFiles().size
+        picFile = File(studentDir, "$faceInd.jpg")
     }
 
     private val textureListener = object : TextureView.SurfaceTextureListener{

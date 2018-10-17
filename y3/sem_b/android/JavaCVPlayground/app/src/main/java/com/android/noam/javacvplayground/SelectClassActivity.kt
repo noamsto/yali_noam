@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.activity_select_class.*
 import kotlinx.android.synthetic.main.card_view.view.*
 import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
-import java.io.File
+import java.io.*
 import java.util.*
 
 
@@ -24,8 +24,10 @@ class SelectClassActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "SelectClassActivity"
+        private const val CLASS_FILE_NAME = "classes.dat"
         const val CLASS_OBJ_TAG = "CLASS_OBJ_TAG"
         const val CREATE_NEW_CLASS = 100
+        const val EDIT_CLASS = 101
     }
 
     private val classes: ArrayList<ClassObj> = ArrayList()
@@ -35,7 +37,6 @@ class SelectClassActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_class)
-
         val rootDir  = intent.getSerializableExtra(APP_DIR_NAME) as File
         samplesDir = File(rootDir, ManageStudentsActivity.STUDENTS_DIR)
         if ( ! samplesDir.exists()){
@@ -46,14 +47,42 @@ class SelectClassActivity : AppCompatActivity() {
         classesAdapter = ClassesAdapter(this, classes, this)
         faceSetRecycler.layoutManager = GridLayoutManager(this, 3)
         faceSetRecycler.adapter = classesAdapter
-
+        restoreSavedClassData()
+        updateClasses()
         swipeLayout.setOnRefreshListener {
             updateClasses()
             swipeLayout.isRefreshing = false
         }
-        updateClasses()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        saveClassesData()
+    }
+
+    private fun saveClassesData(){
+        if (classes.last().isNew)
+            classes.removeAt(classes.lastIndex)
+        if (classes.isEmpty())
+            return
+        val classesFile = File(filesDir, CLASS_FILE_NAME)
+        val fileOutputStream = FileOutputStream(classesFile)
+        val objectOutputStream = ObjectOutputStream(fileOutputStream)
+        objectOutputStream.writeObject(classes)
+        objectOutputStream.close()
+    }
+
+    private fun restoreSavedClassData(){
+        val classesFile = File(filesDir, CLASS_FILE_NAME)
+        if (!classesFile.exists())
+            return
+        val fileInputStream = FileInputStream(classesFile)
+        val objInputStream = ObjectInputStream(fileInputStream)
+        classes.clear()
+        classes.addAll(objInputStream.readObject() as ArrayList<ClassObj>)
+        objInputStream.close()
+
+    }
 
     private fun updateClasses() {
         for (classObj in classes ) {
@@ -68,36 +97,44 @@ class SelectClassActivity : AppCompatActivity() {
                 studentSet.samplesCount = numOfSamples
             }
         }
-        classes.add(ClassObj("new",0, TreeSet(), true))
+        if (classes.isEmpty() || !classes.last().isNew)
+            classes.add(ClassObj("new",0, TreeSet(), true))
         classesAdapter.notifyDataSetChanged()
     }
 
-    fun setSelected(classObj: ClassObj) {
-        if (classObj.isNew) {
-            toast("Let's Create a new Set.")
-            val createNewClassIntent = Intent(this, CreateNewClassActivity::class.java)
-            createNewClassIntent.putExtra(STUDENTS_DIR, samplesDir)
-            createNewClassIntent.putExtra(CLASS_OBJ_TAG, classObj)
-            this.startActivityForResult(createNewClassIntent, CREATE_NEW_CLASS)
+    fun classSelected(currentItem: ClassObj) {
+        if (currentItem.isNew) {
+            editClass(currentItem)
             return
         }
-        if (classObj.isEmpty()) {
+        if (currentItem.isEmpty()) {
             toast("FaceSet is Empty, please fill it.")
             return
         }
         val faceDetectorIntent = Intent(this, FaceDetectorActivity::class.java)
-        faceDetectorIntent.putExtra(CLASS_OBJ_TAG, classObj)
+        faceDetectorIntent.putExtra(CLASS_OBJ_TAG, currentItem)
         startActivity(faceDetectorIntent)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (resultCode){
-            CREATE_NEW_CLASS -> {
-                classes.add(data!!.getSerializableExtra(CLASS_OBJ_TAG)!! as ClassObj)
+            EDIT_CLASS -> {
+                classes.add(0, data!!.getSerializableExtra(CLASS_OBJ_TAG)!! as ClassObj)
                 classesAdapter.notifyDataSetChanged()
             }
+
         }
+    }
+
+    fun editClass(currentItem: ClassObj): Boolean {
+        if (!currentItem.isNew)
+            classes.remove(currentItem)
+        val createNewClassIntent = Intent(this, CreateNewClassActivity::class.java)
+        createNewClassIntent.putExtra(STUDENTS_DIR, samplesDir)
+        createNewClassIntent.putExtra(CLASS_OBJ_TAG, currentItem)
+        this.startActivityForResult(createNewClassIntent, EDIT_CLASS)
+        return true
     }
 
     class ClassesAdapter(private val context: Context,
@@ -134,7 +171,10 @@ class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
     init {
         view.setOnClickListener {
-            selectClassActivity.setSelected(currentItem)
+            selectClassActivity.classSelected(currentItem)
+        }
+        view.setOnLongClickListener{
+            selectClassActivity.editClass(currentItem)
         }
     }
 }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">JavaCV Playground</string>
+    <string name="take_picture">Take Picture</string>
 </resources>

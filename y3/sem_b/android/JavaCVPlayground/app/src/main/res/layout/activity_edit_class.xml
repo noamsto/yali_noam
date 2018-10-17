@@ -27,6 +27,7 @@
         android:layout_height="0dp"
         android:layout_weight="4"
         android:scrollbars="vertical"
+        android:isScrollContainer="false"
         >
 
     </android.support.v7.widget.RecyclerView>

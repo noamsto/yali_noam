@@ -2,23 +2,29 @@ package com.android.noam.javacvplayground
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.BaseAdapter
+import com.android.noam.javacvplayground.face.operations.ImageCaptureActivity
+import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_manage_students.*
 import kotlinx.android.synthetic.main.list_view_student_item.view.*
 import org.jetbrains.anko.toast
 import java.io.File
 
-class ManageStudentsActivity : AppCompatActivity() {
+class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListener{
+
 
     companion object {
-        const val TAG = "CreateNewClassActivity"
+        const val TAG = "ManageStudentsActivity"
         const val STUDENTS_DIR = "samples"
+        const val CURRENT_STUDENT_DIR = "CURRENT_STUDENT_DIR"
     }
 
     var studentSetList: ArrayList<StudentSet> = ArrayList()
@@ -32,6 +38,7 @@ class ManageStudentsActivity : AppCompatActivity() {
         rootDir = intent.getSerializableExtra(MainActivity.APP_DIR_NAME)!! as File
         studentSetAdapter = StudentsSetAdapter(this, studentSetList)
         student_list_view.adapter = studentSetAdapter
+        student_list_view.onItemClickListener = this
         initSamplesDir(rootDir)
     }
 
@@ -44,23 +51,24 @@ class ManageStudentsActivity : AppCompatActivity() {
         readStudentSets()
     }
     private fun readStudentSets() {
-        if (samplesDir != null) {
-            Log.d(TAG, "Searching for all faces sets in ${samplesDir.absolutePath}")
-            for (studentDir in samplesDir.listFiles()) {
-                var numOfSamples = 0
-                studentDir.walkTopDown().forEach {
-                    if (it.parentFile != studentDir && it.extension.matches("""pgm|jpg|bmp|png""".toRegex())) {
-                        numOfSamples++
-                    }
+
+        Log.d(TAG, "Searching for all faces sets in ${samplesDir.absolutePath}")
+        for (studentDir in samplesDir.listFiles()) {
+            var numOfSamples = 0
+            studentDir.listFiles().forEach {
+                if (it.extension.matches("""pgm|jpg|bmp|png""".toRegex())) {
+                    numOfSamples += 1
                 }
-                val studentSet = StudentSet(
-                        studentDir.nameWithoutExtension.filter { it.isLetter() },
-                        studentDir, studentSetList.lastIndex, numOfSamples)
-                studentSetList.add(studentSet)
-                Log.d(TAG, "Found ${studentSet.name}, path: ${studentDir.path}, " +
-                        "id: ${studentSet.id} and  ${studentSet.samplesCount} samples")
             }
+            val studentSet = StudentSet(
+                    studentDir.nameWithoutExtension.filter { it.isLetter() || it.isWhitespace() },
+                    studentDir, studentDir.nameWithoutExtension.filter { it.isDigit() }.toInt() ,
+                    numOfSamples)
+            studentSetList.add(studentSet)
+            Log.d(TAG, "Found ${studentSet.name}, path: ${studentDir.path}, " +
+                    "id: ${studentSet.id} and  ${studentSet.samplesCount} samples")
         }
+
         studentSetAdapter.notifyDataSetChanged()
     }
     fun submitNewStudent(view: View) {
@@ -70,8 +78,7 @@ class ManageStudentsActivity : AppCompatActivity() {
             student_name_ET.setText("")
         }
     }
-
-    fun createNewStudentDir(newStudentName: String) {
+    private fun createNewStudentDir(newStudentName: String) {
         val studentID = studentSetList.lastIndex.plus(1)
         val studentDir = File(samplesDir, "$newStudentName$studentID")
         if (!studentDir.exists()) {
@@ -84,6 +91,18 @@ class ManageStudentsActivity : AppCompatActivity() {
         }
     }
 
+    private fun captureSelfies(studentSet: StudentSet) = runWithPermissions(
+            android.Manifest.permission.CAMERA ) {
+        val imageCaptureIntent = Intent(this, ImageCaptureActivity::class.java)
+        imageCaptureIntent.putExtra(CURRENT_STUDENT_DIR, studentSet.dir)
+        startActivity(imageCaptureIntent)
+    }
+
+    override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+
+        val selectedStudentSet = studentSetList[p2]
+        captureSelfies(selectedStudentSet)
+    }
 
     class StudentsSetAdapter(private val activity: Activity, private val studentsList: ArrayList<StudentSet>) : BaseAdapter() {
         override fun getItem(p0: Int) = studentsList[p0]

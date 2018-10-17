@@ -12,8 +12,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.android.noam.javacvplayground.ManageStudentsActivity.Companion.STUDENTS_DIR
 import com.android.noam.javacvplayground.SelectClassActivity.Companion.CLASS_OBJ_TAG
-import com.android.noam.javacvplayground.SelectClassActivity.Companion.CREATE_NEW_CLASS
-import kotlinx.android.synthetic.main.activity_create_new_class.*
+import com.android.noam.javacvplayground.SelectClassActivity.Companion.EDIT_CLASS
+import kotlinx.android.synthetic.main.activity_edit_class.*
 import kotlinx.android.synthetic.main.list_view_student_item.view.*
 import org.jetbrains.anko.toast
 import java.io.File
@@ -32,11 +32,16 @@ class CreateNewClassActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_create_new_class)
+        setContentView(R.layout.activity_edit_class)
+        val oldClass = intent.extras.get(CLASS_OBJ_TAG) as ClassObj
+        selectedStudents.addAll(oldClass.studentList)
+        if (!oldClass.isNew)
+            class_name.setText(oldClass.name)
+
         samplesDir = intent.extras.getSerializable(STUDENTS_DIR) as File
 
         val studentRecyclerView: RecyclerView = student_recycler_view
-        studentRecyclerAdapter = StudentRecyclerAdapter(this, allStudentList, this)
+        studentRecyclerAdapter = StudentRecyclerAdapter(this, allStudentList, selectedStudents, this)
         studentRecyclerView.layoutManager = LinearLayoutManager(this)
         studentRecyclerView.adapter = studentRecyclerAdapter
         readAllStudents()
@@ -76,7 +81,7 @@ class CreateNewClassActivity : AppCompatActivity() {
         val result = Intent()
         result.putExtra(CLASS_OBJ_TAG, ClassObj(class_name.text.toString(),selectedStudents.size,
                 selectedStudents))
-        setResult(CREATE_NEW_CLASS, result)
+        setResult(EDIT_CLASS, result)
         this.finish()
     }
 
@@ -84,6 +89,7 @@ class CreateNewClassActivity : AppCompatActivity() {
 
 class StudentRecyclerAdapter(private val context: Context,
                              private val studentSetList: ArrayList<StudentSet>,
+                             private val selectedStudents: TreeSet<StudentSet>,
                              private val createNewClassActivity: CreateNewClassActivity) : RecyclerView.Adapter<StudentViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StudentViewHolder {
         return StudentViewHolder(LayoutInflater.from(context).inflate(R.layout.list_view_student_item, parent, false))
@@ -97,6 +103,8 @@ class StudentRecyclerAdapter(private val context: Context,
         holder.currentItem = studentSet
         holder.studentName.text = studentSet.name
         holder.samplesCount.text = studentSet.samplesCount.toString()
+        if (studentSet in selectedStudents)
+            holder.itemView.setBackgroundColor(Color.GREEN)
 
     }
 }
@@ -105,7 +113,6 @@ class StudentViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val samplesCount = view.num_of_samples!!
     lateinit var currentItem: StudentSet
     lateinit var createNewClassActivity: CreateNewClassActivity
-
     init {
         view.setOnClickListener {
             createNewClassActivity.setSelected(currentItem, view)
