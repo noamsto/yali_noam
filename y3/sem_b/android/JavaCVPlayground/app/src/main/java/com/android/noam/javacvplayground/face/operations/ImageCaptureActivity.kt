@@ -7,7 +7,6 @@ import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.Bundle
-import android.os.Environment
 import android.os.Handler
 import android.os.HandlerThread
 import android.support.v7.app.AppCompatActivity
@@ -18,16 +17,21 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.widget.Button
-import com.android.noam.faceDetectorPart.ImageSaver
 import com.android.noam.javacvplayground.ManageStudentsActivity.Companion.CURRENT_STUDENT_DIR
+import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_image_capture.*
 import org.jetbrains.anko.toast
 import java.io.File
+import java.lang.Exception
 import java.util.*
 
-class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String> {
+class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnFailureListener {
+    override fun onFailure(p0: Exception) {
+        toast(p0.message.toString())
+    }
+
     override fun onSuccess(p0: String?) {
         toast("Saved face under:${picFile.absolutePath}")
         picFile = File(studentDir, "${++faceInd}.jpg")
@@ -38,6 +42,7 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String> {
 
     companion object {
         private const val TAG = "ImageCaptureActivity"
+        private const val WIDTH = 640
         private val ORIENTATIONS = SparseIntArray()
         init {
             ORIENTATIONS.append(Surface.ROTATION_0, 90)
@@ -166,8 +171,10 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String> {
             captureRequestBuilder.addTarget(surface)
 
             val aspectRatio = imageDimension.width/imageDimension.height
-            val width = 480
-            imageReader = ImageReader.newInstance(width, width/aspectRatio,
+            val width = WIDTH
+            val height = width/aspectRatio
+            Log.d(TAG, "Capture image of size: width:$width, height:$height")
+            imageReader = ImageReader.newInstance(width, height,
                     ImageFormat.JPEG, /*maxImages*/ 5).apply {
                 setOnImageAvailableListener(onImageAvailableListener, mBackgroundHandler)
             }
@@ -195,7 +202,7 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String> {
      * still mediaImage is ready to be saved.
      */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-        mBackgroundHandler?.post(ImageSaver(it.acquireNextImage(), picFile, rotationValue, croppedFaceView, this))
+        mBackgroundHandler?.post(ImageSaver(it.acquireNextImage(), picFile, rotationValue, croppedFaceView, this, this))
     }
 
     /**
@@ -234,7 +241,6 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String> {
                             mBackgroundHandler)
                 }
             }
-
             cameraCaptureSession?.apply {
                 stopRepeating()
                 abortCaptures()

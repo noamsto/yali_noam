@@ -1,4 +1,4 @@
-package com.android.noam.faceDetectorPart
+package com.android.noam.javacvplayground.face.operations
 
 import android.graphics.Bitmap
 import com.google.android.gms.tasks.OnFailureListener
@@ -17,9 +17,8 @@ class FaceDetect(mediaImage : Bitmap, successListener: OnSuccessListener<List<Fi
     private val options = FirebaseVisionFaceDetectorOptions.Builder()
             .setModeType(FirebaseVisionFaceDetectorOptions.ACCURATE_MODE)
             .setLandmarkType(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
-            .setClassificationType(FirebaseVisionFaceDetectorOptions.ALL_CLASSIFICATIONS)
             .setMinFaceSize(0.15f)
-            .setTrackingEnabled(true)
+            .setTrackingEnabled(false)
             .build()!!
     init {
         detector = FirebaseVision.getInstance()

@@ -24,16 +24,16 @@ class CreateNewClassActivity : AppCompatActivity() {
     companion object {
         const val TAG = "CreateNewClassActivity"
     }
-    val allStudentList : ArrayList<StudentSet> = ArrayList()
-    val selectedStudents : TreeSet<StudentSet> = TreeSet()
-    lateinit var samplesDir : File
-    lateinit var studentRecyclerAdapter: RecyclerView.Adapter<StudentViewHolder>
-
+    private val allStudentList : ArrayList<StudentSet> = ArrayList()
+    private val selectedStudents : TreeSet<StudentSet> = TreeSet()
+    private lateinit var samplesDir : File
+    private lateinit var studentRecyclerAdapter: RecyclerView.Adapter<StudentViewHolder>
+    private lateinit var oldClass: ClassObj
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_class)
-        val oldClass = intent.extras.get(CLASS_OBJ_TAG) as ClassObj
+        oldClass = intent.extras.get(CLASS_OBJ_TAG) as ClassObj
         selectedStudents.addAll(oldClass.studentList)
         if (!oldClass.isNew)
             class_name.setText(oldClass.name)
@@ -53,7 +53,7 @@ class CreateNewClassActivity : AppCompatActivity() {
                 continue
             val name = studentDir.name.filter { it.isLetter() }
             val id = studentDir.name.filter { it.isDigit() }.toInt()
-            var numOfSamples = studentDir.listFiles().size
+            val numOfSamples = studentDir.listFiles().size
             val studentSet = StudentSet(name, studentDir, id, numOfSamples)
             allStudentList.add(studentSet)
         }
@@ -73,6 +73,7 @@ class CreateNewClassActivity : AppCompatActivity() {
         studentRecyclerAdapter.notifyDataSetChanged()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun submitClass(view: View){
         if (class_name.text.isBlank()){
             toast("Please fill Class name.")
@@ -84,15 +85,16 @@ class CreateNewClassActivity : AppCompatActivity() {
         setResult(EDIT_CLASS, result)
         this.finish()
     }
-
 }
 
 class StudentRecyclerAdapter(private val context: Context,
                              private val studentSetList: ArrayList<StudentSet>,
                              private val selectedStudents: TreeSet<StudentSet>,
-                             private val createNewClassActivity: CreateNewClassActivity) : RecyclerView.Adapter<StudentViewHolder>() {
+                             private val createNewClassActivity: CreateNewClassActivity) :
+        RecyclerView.Adapter<StudentViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StudentViewHolder {
-        return StudentViewHolder(LayoutInflater.from(context).inflate(R.layout.list_view_student_item, parent, false))
+        return StudentViewHolder(LayoutInflater.from(context).inflate(
+                R.layout.list_view_student_item, parent, false))
     }
 
     override fun getItemCount() = studentSetList.size
@@ -105,7 +107,6 @@ class StudentRecyclerAdapter(private val context: Context,
         holder.samplesCount.text = studentSet.samplesCount.toString()
         if (studentSet in selectedStudents)
             holder.itemView.setBackgroundColor(Color.GREEN)
-
     }
 }
 class StudentViewHolder(view: View) : RecyclerView.ViewHolder(view) {

@@ -26,13 +26,13 @@ class SelectClassActivity : AppCompatActivity() {
         private const val TAG = "SelectClassActivity"
         private const val CLASS_FILE_NAME = "classes.dat"
         const val CLASS_OBJ_TAG = "CLASS_OBJ_TAG"
-        const val CREATE_NEW_CLASS = 100
         const val EDIT_CLASS = 101
     }
 
     private val classes: ArrayList<ClassObj> = ArrayList()
     private lateinit var classesAdapter: ClassesAdapter
     private lateinit var samplesDir: File
+    private lateinit var preEditClass: ClassObj
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +72,7 @@ class SelectClassActivity : AppCompatActivity() {
         objectOutputStream.close()
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun restoreSavedClassData(){
         val classesFile = File(filesDir, CLASS_FILE_NAME)
         if (!classesFile.exists())
@@ -121,14 +122,17 @@ class SelectClassActivity : AppCompatActivity() {
         when (resultCode){
             EDIT_CLASS -> {
                 classes.add(0, data!!.getSerializableExtra(CLASS_OBJ_TAG)!! as ClassObj)
-                classesAdapter.notifyDataSetChanged()
             }
-
+            else -> {
+                classes.add(0, preEditClass)
+            }
         }
+        classesAdapter.notifyDataSetChanged()
     }
 
     fun editClass(currentItem: ClassObj): Boolean {
         if (!currentItem.isNew)
+            preEditClass = currentItem
             classes.remove(currentItem)
         val createNewClassIntent = Intent(this, CreateNewClassActivity::class.java)
         createNewClassIntent.putExtra(STUDENTS_DIR, samplesDir)
