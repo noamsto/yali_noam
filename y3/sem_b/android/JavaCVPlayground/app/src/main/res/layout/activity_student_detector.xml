@@ -3,37 +3,56 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".face.operations.ImageCaptureActivity"
-    android:orientation="vertical">
-
+    tools:context=".StudentDetectorActivity">
 
     <com.android.noam.javacvplayground.AutoFitTextureView
         android:id="@+id/texture_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/croppedFaceView"
+        android:layout_above="@+id/btn_sign_me"
         />
 
-    <ImageView
-        android:id="@+id/croppedFaceView"
+    <LinearLayout
+        android:id="@+id/student_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:layout_margin="8dp"
-        android:minHeight="100dp"
-        android:minWidth="100dp"/>
+        android:orientation="vertical"
+
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Student Name"
+            android:textSize="16sp"
+            android:layout_margin="5dp"
+
+            />
+
+        <TextView
+            android:layout_margin="5dp"
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Student ID"
+            android:textSize="16sp"
+
+            />
+
+    </LinearLayout>
 
     <Button
-        android:id="@+id/btn_take_picture"
+        android:id="@+id/btn_sign_me"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/croppedFaceView"
+        android:layout_centerHorizontal="true"
         android:layout_margin="8dp"
         android:padding="10dp"
         android:textSize="26sp"
-        android:text="@string/take_picture" />
-
-
+        android:text="@string/sign_me"
+        android:onClick="captureStillPicture"
+        />
 </RelativeLayout>

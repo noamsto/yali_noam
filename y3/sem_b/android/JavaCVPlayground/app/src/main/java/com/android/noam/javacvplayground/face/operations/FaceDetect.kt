@@ -10,19 +10,23 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetector
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 
 
-class FaceDetect(mediaImage : Bitmap, successListener: OnSuccessListener<List<FirebaseVisionFace>>,
-                 failureListener: OnFailureListener) {
-    private var fBImage : FirebaseVisionImage = FirebaseVisionImage.fromBitmap(mediaImage)
+class FaceDetect {
     private val detector : FirebaseVisionFaceDetector
     private val options = FirebaseVisionFaceDetectorOptions.Builder()
-            .setModeType(FirebaseVisionFaceDetectorOptions.ACCURATE_MODE)
-            .setLandmarkType(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
-            .setMinFaceSize(0.15f)
-            .setTrackingEnabled(false)
+            .setClassificationMode(FirebaseVisionFaceDetectorOptions.ACCURATE)
+            .setLandmarkMode(FirebaseVisionFaceDetectorOptions.ALL_LANDMARKS)
+            .setMinFaceSize(0.30f)
             .build()!!
     init {
         detector = FirebaseVision.getInstance()
                 .getVisionFaceDetector(options)
+    }
+
+
+    fun detectFace(mediaImage : Bitmap, successListener: OnSuccessListener<List<FirebaseVisionFace>>,
+                   failureListener: OnFailureListener){
+         val fBImage : FirebaseVisionImage = FirebaseVisionImage.fromBitmap(mediaImage)
+
         detector.detectInImage(fBImage).addOnSuccessListener(successListener)
                 .addOnFailureListener(failureListener)
     }

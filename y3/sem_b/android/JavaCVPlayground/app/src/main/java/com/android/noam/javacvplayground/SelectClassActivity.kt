@@ -112,7 +112,7 @@ class SelectClassActivity : AppCompatActivity() {
             toast("FaceSet is Empty, please fill it.")
             return
         }
-        val faceDetectorIntent = Intent(this, FaceDetectorActivity::class.java)
+        val faceDetectorIntent = Intent(this, StudentDetectorActivity::class.java)
         faceDetectorIntent.putExtra(CLASS_OBJ_TAG, currentItem)
         startActivity(faceDetectorIntent)
     }
@@ -124,16 +124,18 @@ class SelectClassActivity : AppCompatActivity() {
                 classes.add(0, data!!.getSerializableExtra(CLASS_OBJ_TAG)!! as ClassObj)
             }
             else -> {
-                classes.add(0, preEditClass)
+                if (preEditClass.isNew)
+                    classes.add(preEditClass)
+                else
+                    classes.add(0, preEditClass)
             }
         }
         classesAdapter.notifyDataSetChanged()
     }
 
     fun editClass(currentItem: ClassObj): Boolean {
-        if (!currentItem.isNew)
-            preEditClass = currentItem
-            classes.remove(currentItem)
+        preEditClass = currentItem
+        classes.remove(currentItem)
         val createNewClassIntent = Intent(this, CreateNewClassActivity::class.java)
         createNewClassIntent.putExtra(STUDENTS_DIR, samplesDir)
         createNewClassIntent.putExtra(CLASS_OBJ_TAG, currentItem)

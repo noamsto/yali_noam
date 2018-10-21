@@ -51,7 +51,7 @@ class CreateNewClassActivity : AppCompatActivity() {
         for (studentDir in samplesDir.listFiles().filter { it.isDirectory }){
             if (studentDir == samplesDir )
                 continue
-            val name = studentDir.name.filter { it.isLetter() }
+            val name = studentDir.name.filter { it.isLetter() || it.isWhitespace()}
             val id = studentDir.name.filter { it.isDigit() }.toInt()
             val numOfSamples = studentDir.listFiles().size
             val studentSet = StudentSet(name, studentDir, id, numOfSamples)
@@ -62,14 +62,10 @@ class CreateNewClassActivity : AppCompatActivity() {
 
 
     fun setSelected(currentItem: StudentSet, view: View) {
-        if (currentItem in selectedStudents){
+        if (currentItem in selectedStudents)
             selectedStudents.remove(currentItem)
-            view.setBackgroundColor(Color.WHITE)
-        }
-        else{
+        else
             selectedStudents.add(currentItem)
-            view.setBackgroundColor(Color.GREEN)
-        }
         studentRecyclerAdapter.notifyDataSetChanged()
     }
 
@@ -107,6 +103,9 @@ class StudentRecyclerAdapter(private val context: Context,
         holder.samplesCount.text = studentSet.samplesCount.toString()
         if (studentSet in selectedStudents)
             holder.itemView.setBackgroundColor(Color.GREEN)
+        else
+            holder.itemView.setBackgroundColor(Color.WHITE)
+
     }
 }
 class StudentViewHolder(view: View) : RecyclerView.ViewHolder(view) {

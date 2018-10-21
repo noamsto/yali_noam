@@ -1,9 +1,12 @@
 package com.android.noam.javacvplayground.face.operations
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.media.Image
 import android.util.Log
 import android.widget.ImageView
+import com.android.noam.javacvplayground.face.operations.ImageSaver.Companion.SCALE_FACTOR
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.ml.vision.face.FirebaseVisionFace
@@ -18,19 +21,10 @@ import kotlin.math.max
 /**
  * Saves a JPEG [Image] into the specified [File].
  */
-internal class ImageSaver(
-        /**
-         * The JPEG mediaImage
-         */
+internal class FaceRecognizer(
         private val image: Image,
-
-        /**
-         * The file we save the mediaImage into.
-         */
-        private val file: File,
         private val rotation: Int,
-        private val croppedFaceViewer : ImageView,
-        private val detectFaceSuccessListener: OnSuccessListener<String>,
+        private val detectFaceSuccessListener: OnSuccessListener<Bitmap>,
         private val detectFaceFailureListener : OnFailureListener
 
 ) : Runnable {
@@ -39,14 +33,10 @@ internal class ImageSaver(
     private lateinit var scaledFace: Bitmap
     private val bmpTools = BMPTools()
     private val faceDetector = FaceDetect()
-    private val shouldThrottle = AtomicBoolean(false)
 
     override fun run() {
-        if (shouldThrottle.get()){
-            image.close()
-            detectFaceFailureListener.onFailure(Exception("Still working on previous picture."))
-            return
-        }
+        image.close()
+        detectFaceFailureListener.onFailure(Exception("Still working on previous picture."))
         bitMapImage = bmpTools.convertToBmpAndRotate(image, rotation)
         this.faceDetector.detectFace(bitMapImage,
                 OnSuccessListener {
@@ -80,8 +70,10 @@ internal class ImageSaver(
             return
         }
 
-        var minX = arrayOf(rightEye.position.x,  rightEar?.position?.x, rightCheek?.position?.x).minWith(CompareWithNull())!!.toInt()
-        var maxX = arrayOf(leftEye.position.x, leftEar?.position?.x, leftCheek?.position?.x).minWith(CompareWithNull())!!.toInt()
+        var minX = arrayOf(rightEye.position.x,  rightEar?.position?.x, rightCheek?.position?.x)
+                .minWith(CompareWithNull())!!.toInt()
+        var maxX = arrayOf(leftEye.position.x, leftEar?.position?.x, leftCheek?.position?.x)
+                .minWith(CompareWithNull())!!.toInt()
         var minY = arrayOf(
                 rightEye.position?.y, rightEar?.position?.y, leftEar?.position?.y,
                 leftEye.position?.y).minWith(CompareWithNull())!!.toInt()
@@ -104,12 +96,12 @@ internal class ImageSaver(
 
         Log.i(TAG, "Cropping image to top left: $minX, $minY and width:$width, height:$height")
         croppedFace = Bitmap.createBitmap(bitMapImage,minX, minY, width, height)
-        verifyAndSaveFace()
+        verifyAndRecognizeFace()
         Log.d(TAG,"processFace end")
         return
     }
 
-    private fun verifyAndSaveFace() {
+    private fun verifyAndRecognizeFace() {
         Log.d(TAG,"verifyAndSaveFace start")
         this.faceDetector.detectFace(croppedFace, OnSuccessListener {
             it.forEach {
@@ -126,57 +118,24 @@ internal class ImageSaver(
                     bitMapImage.recycle()
                     detectFaceFailureListener.onFailure(java.lang.Exception("Face detectionFailed"))
                 }else{
-                    scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_FACTOR, SCALE_FACTOR, false)
-                    croppedFaceViewer.setImageBitmap(scaledFace)
-                    writeToFile()
-                    detectFaceSuccessListener.onSuccess("Face cropped and saved.")
+                    scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_FACTOR, SCALE_FACTOR,
+                            false)
+                    detectFaceSuccessListener.onSuccess(scaledFace)
                 }
-                shouldThrottle.set(false)
             }
         }, OnFailureListener {
             croppedFace.recycle()
             bitMapImage.recycle()
             detectFaceFailureListener.onFailure(it)
             Log.e(TAG, "Face detection Error ${it.message}")
-            shouldThrottle.set(false)
         } )
-        shouldThrottle.set(true)
         Log.d(TAG,"verifyAndSaveFace end")
     }
-
-    private fun writeToFile() {
-        Log.d(TAG,"writeToFile start")
-        var output: FileOutputStream? = null
-        try {
-            output = FileOutputStream(file).apply {
-                scaledFace.compress(Bitmap.CompressFormat.JPEG, 100, this)
-                flush()
-            }
-        } catch (e: IOException) {
-            Log.e(TAG, e.toString())
-        } finally {
-            croppedFace.recycle()
-            bitMapImage.recycle()
-            output?.let {
-                try {
-                    it.close()
-                } catch (e: IOException) {
-                    Log.e(TAG, e.toString())
-                }
-            }
-        }
-        Log.d(TAG,"writeToFile end")
-    }
-
-
-
 
     companion object {
         /**
          * Tag for the [Log].
          */
         private const val TAG = "ImageSaver"
-        const val SCALE_FACTOR = 100 //face will be (SCALE_FACTOR)x(SCALE_FACTOR)
-
     }
 }

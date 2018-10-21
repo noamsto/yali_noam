@@ -1,7 +1,8 @@
-package com.android.noam.javacvplayground.face.operations
+package com.android.noam.javacvplayground
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
@@ -16,35 +17,63 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import android.widget.Button
-import com.android.noam.javacvplayground.AutoFitTextureView
-import com.android.noam.javacvplayground.ManageStudentsActivity.Companion.CURRENT_STUDENT_DIR
+import com.android.noam.javacvplayground.face.operations.FaceRecognizer
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
-import kotlinx.android.synthetic.main.activity_image_capture.*
+import kotlinx.android.synthetic.main.activity_student_detector.*
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnFailureListener {
+class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuccessListener<Bitmap>, OnFailureListener {
 
+
+
+    private lateinit var classObj : ClassObj
+    private lateinit var eigenFaces: EigenFaces
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_student_detector)
+
+        btn_sign_me.setOnClickListener{
+            captureStillPicture(it)
+        }
+
+        textureView = texture_view!!
+
+        classObj = intent.extras.getSerializable(SelectClassActivity.CLASS_OBJ_TAG) as ClassObj
+
+
+        eigenFaces = EigenFaces(classObj.studentList, this)
+
+
+        doAsync {
+            eigenFaces.readAllStudentsFaces()
+            eigenFaces.trainModel()
+        }
+    }
+
+    override fun onModelReady() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     override fun onFailure(p0: Exception) {
-        toast(p0.message.toString())
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun onSuccess(p0: String?) {
-        toast("Saved face under:${picFile.absolutePath}")
-        picFile = File(studentDir, "${++faceInd}.jpg")
+    override fun onSuccess(p0: Bitmap?) {
+
     }
 
-    private lateinit var  takePictureBtn : Button
+
     private lateinit var textureView : AutoFitTextureView
 
     companion object {
-        private const val TAG = "ImageCaptureActivity"
+        private const val TAG = "StudentDetectorActivity"
         private const val WIDTH = 920
         private val ORIENTATIONS = SparseIntArray()
         private val shouldThrottle = AtomicBoolean(false)
@@ -64,29 +93,10 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
     private lateinit var imageDimension: Size
     private lateinit var imageReader: ImageReader
     private lateinit var picFile : File
-    private lateinit var studentDir : File
-    private var faceInd = 0
     private var mBackgroundHandler : Handler? = null
     private var mBackgroundThread : HandlerThread? = null
     private var rotationValue = 0
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(com.android.noam.javacvplayground.R.layout.activity_image_capture)
-
-        takePictureBtn = btn_take_picture!!
-        textureView = texture_view!!
-
-        takePictureBtn.setOnClickListener {
-            captureStillPicture(it)
-        }
-
-        studentDir = intent.extras.get(CURRENT_STUDENT_DIR) as File
-        if (! studentDir.exists() )
-            studentDir.mkdir()
-        faceInd = studentDir.listFiles().size
-        picFile = File(studentDir, "$faceInd.jpg")
-    }
 
     private val textureListener = object : TextureView.SurfaceTextureListener{
         override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
@@ -210,7 +220,8 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
         Log.d(TAG, "onImageAvailableListener start")
         Log.d(TAG, "image add")
         mBackgroundHandler?.post(
-                ImageSaver(it.acquireNextImage(), picFile, rotationValue, croppedFaceView, this, this))
+                FaceRecognizer(it.acquireNextImage(), rotationValue,
+                        this, this))
         Log.d(TAG, "onImageAvailableListener end")
     }
 
@@ -296,4 +307,5 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
         stopBackgroundThread()
         super.onPause()
     }
+
 }

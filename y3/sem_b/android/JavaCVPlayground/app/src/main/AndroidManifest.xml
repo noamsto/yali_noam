@@ -13,23 +13,37 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:screenOrientation="portrait"
+            >
             <intent-filter>
+
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SelectClassActivity" />
+        <activity android:name=".SelectClassActivity"
+            android:screenOrientation="portrait"
+
+            />
 
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
             android:value="face" />
 
-        <activity android:name=".FaceDetectorActivity" />
-        <activity android:name=".CreateNewClassActivity" />
-        <activity android:name=".ManageStudentsActivity" />
-        <activity android:name=".face.operations.ImageCaptureActivity" />
+        <activity android:name=".StudentDetectorActivity"
+            android:screenOrientation="portrait"
+            />
+        <activity android:name=".CreateNewClassActivity"
+            android:screenOrientation="portrait"
+            />
+        <activity android:name=".ManageStudentsActivity"
+            android:screenOrientation="portrait"
+            />
+        <activity android:name=".face.operations.ImageCaptureActivity"
+            android:screenOrientation="portrait"
+            />
 
     </application>
 
