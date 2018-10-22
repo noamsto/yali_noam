@@ -18,9 +18,7 @@ import java.lang.Exception
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 
-/**
- * Saves a JPEG [Image] into the specified [File].
- */
+
 internal class FaceRecognizer(
         private val image: Image,
         private val rotation: Int,
@@ -35,8 +33,6 @@ internal class FaceRecognizer(
     private val faceDetector = FaceDetect()
 
     override fun run() {
-        image.close()
-        detectFaceFailureListener.onFailure(Exception("Still working on previous picture."))
         bitMapImage = bmpTools.convertToBmpAndRotate(image, rotation)
         this.faceDetector.detectFace(bitMapImage,
                 OnSuccessListener {

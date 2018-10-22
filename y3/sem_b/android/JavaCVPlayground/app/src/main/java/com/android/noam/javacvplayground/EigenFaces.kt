@@ -16,7 +16,9 @@ import java.util.*
 
 class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private val onModelReadyListener: OnModelReadyListener) {
 
-    private val TAG = "EigenFaces"
+    companion object {
+        private const val TAG = "EigenFaces"
+    }
 
     private var images = MatVector()
     private var labels = Vector<Int>()
@@ -28,12 +30,14 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
     private var imWidth: Int = 0
 
 
+    @Suppress("NestedLambdaShadowedImplicitParameter")
     fun readAllStudentsFaces() {
         var image: Mat? = null
-        var label = 0
+        var label: Int
         selectedStudents.forEach {
-            label = it.name.filter { it.isDigit() }.toInt()
-            it.dir.listFiles(FileFilter { it.name.matches("""pgm|jpg|bmp|png""".toRegex()) })
+            label = it.id
+            it.dir.listFiles(FileFilter {
+                it.extension.matches("""pgm|jpg|bmp|png""".toRegex()) })
                     .forEach {
                         image = opencv_imgcodecs.imread(it.path, CV_LOAD_IMAGE_GRAYSCALE)
                         images.push_back(image)
@@ -46,17 +50,11 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
         imWidth = images[0].arrayWidth()
     }
 
-    fun predictImage(img_path: String): Int {
-
-        if (eigenFaceRecognizer.empty()) {
-            Log.e(TAG, "Called predict without training model.")
-            return -1
-        }
-        val testSample = imread(img_path, CV_LOAD_IMAGE_GRAYSCALE)
+    private fun predictLabel(img: Mat): Int{
         val confidence = DoublePointer(1)
         val label = IntPointer(1)
         try {
-            eigenFaceRecognizer.predict(testSample, label, confidence)
+            eigenFaceRecognizer.predict(img, label, confidence)
         } catch (e: RuntimeException) {
             Log.e(TAG, e.message)
             return -1
@@ -64,6 +62,16 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
         val predictedLabel = label[0]
         Log.d(TAG, "predicted $predictedLabel, Confidence value: ${confidence.get(0)}")
         return predictedLabel
+    }
+
+    fun predictImage(img_path: String): Int {
+
+        if (eigenFaceRecognizer.empty()) {
+            Log.e(TAG, "Called predict without training model.")
+            return -1
+        }
+        val testSample = imread(img_path, CV_LOAD_IMAGE_GRAYSCALE)
+        return predictLabel(testSample)
     }
 
     private fun calcMaxConfidence() {
@@ -108,16 +116,6 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
 interface  OnModelReadyListener{
     fun onModelReady()
 }
-// maybe wont be needed
-//    fun norm_0_255 (src : Mat) : Mat{
-//        val dst : Mat = Mat()
-//        when (src.channels()){
-//            0 -> opencv_core.normalize(src ,dst ,0.0 ,255.0 , NORM_MINMAX, CV_8UC1, src)
-//            3 -> opencv_core.normalize(src ,dst ,0.0 ,255.0 , NORM_MINMAX, CV_8UC3, src)
-//            else -> src.copyTo(dst)
-//        }
-//        return dst
-//    }
 
 
 

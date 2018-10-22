@@ -1,5 +1,6 @@
 package com.android.noam.javacvplayground.face.operations
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.media.Image
 import android.util.Log
@@ -169,8 +170,6 @@ internal class ImageSaver(
     }
 
 
-
-
     companion object {
         /**
          * Tag for the [Log].
@@ -178,5 +177,28 @@ internal class ImageSaver(
         private const val TAG = "ImageSaver"
         const val SCALE_FACTOR = 100 //face will be (SCALE_FACTOR)x(SCALE_FACTOR)
 
+        fun saveTmpImg(faceImg: Bitmap, context: Context): File {
+            Log.d(TAG,"writeToFile start")
+            var output: FileOutputStream? = null
+            val tmpFile = File(context.cacheDir, "tmp.txt")
+            try {
+                output = FileOutputStream(tmpFile).apply {
+                    faceImg.compress(Bitmap.CompressFormat.JPEG, 100, this)
+                    flush()
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, e.toString())
+            } finally {
+                output?.let {
+                    try {
+                        it.close()
+                    } catch (e: IOException) {
+                        Log.e(TAG, e.toString())
+                    }
+                }
+            }
+            Log.d(TAG,"writeToFile end")
+            return tmpFile
+        }
     }
 }

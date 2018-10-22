@@ -18,12 +18,16 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import com.android.noam.javacvplayground.face.operations.FaceRecognizer
+import com.android.noam.javacvplayground.face.operations.ImageSaver
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_student_detector.*
+import org.bytedeco.javacpp.opencv_core
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
+import org.opencv.android.Utils
+import org.opencv.core.Mat
 import java.io.File
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -34,7 +38,7 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
 
     private lateinit var classObj : ClassObj
     private lateinit var eigenFaces: EigenFaces
-
+    private val modelReady = AtomicBoolean(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_student_detector)
@@ -44,6 +48,8 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         }
 
         textureView = texture_view!!
+
+
 
         classObj = intent.extras.getSerializable(SelectClassActivity.CLASS_OBJ_TAG) as ClassObj
 
@@ -58,15 +64,25 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
     }
 
     override fun onModelReady() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        modelReady.set(true)
     }
 
     override fun onFailure(p0: Exception) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        toast(p0.message.toString())
     }
 
-    override fun onSuccess(p0: Bitmap?) {
+    override fun onSuccess(p0: Bitmap) {
+        if (!modelReady.get()){
+            toast("Recognition model not ready yet!")
+            return
+        }
 
+        val tmpImg = ImageSaver.saveTmpImg(p0, this)
+        val studentId = eigenFaces.predictImage(tmpImg.absolutePath)
+
+        val student = classObj.studentList.single { it.id == studentId }
+        predicted_student_id.text = student.id.toString()
+        predicted_student_name.text = student.name
     }
 
 
@@ -92,7 +108,6 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
     private lateinit var captureRequestBuilder: CaptureRequest.Builder
     private lateinit var imageDimension: Size
     private lateinit var imageReader: ImageReader
-    private lateinit var picFile : File
     private var mBackgroundHandler : Handler? = null
     private var mBackgroundThread : HandlerThread? = null
     private var rotationValue = 0
@@ -262,7 +277,6 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
                 override fun onCaptureCompleted(session: CameraCaptureSession,
                                                 request: CaptureRequest,
                                                 result: TotalCaptureResult) {
-                    Log.d(TAG, picFile.toString())
                     cameraCaptureSession?.setRepeatingRequest(captureRequest, null,
                             mBackgroundHandler)
                     shouldThrottle.set(false)
