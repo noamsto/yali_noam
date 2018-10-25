@@ -44,6 +44,8 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         setContentView(R.layout.activity_student_detector)
 
         btn_sign_me.setOnClickListener{
+            predicted_student_name.text = ""
+            predicted_student_id.text = ""
             captureStillPicture(it)
         }
 

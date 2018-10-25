@@ -5,7 +5,7 @@ import android.util.Log
 import org.bytedeco.javacpp.DoublePointer
 import org.bytedeco.javacpp.IntPointer
 import org.bytedeco.javacpp.opencv_core.*
-import org.bytedeco.javacpp.opencv_face.EigenFaceRecognizer
+import org.bytedeco.javacpp.opencv_face.FisherFaceRecognizer
 import org.bytedeco.javacpp.opencv_imgcodecs
 import org.bytedeco.javacpp.opencv_imgcodecs.CV_LOAD_IMAGE_GRAYSCALE
 import org.bytedeco.javacpp.opencv_imgcodecs.imread
@@ -22,7 +22,7 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
 
     private var images = MatVector()
     private var labels = Vector<Int>()
-    private val eigenFaceRecognizer: EigenFaceRecognizer = EigenFaceRecognizer.create()
+    private val fisherFaceRecognizer: FisherFaceRecognizer = FisherFaceRecognizer.create()
     private lateinit var testImage : Mat
     private var maxConfidence = 0.0
 
@@ -54,7 +54,7 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
         val confidence = DoublePointer(1)
         val label = IntPointer(1)
         try {
-            eigenFaceRecognizer.predict(img, label, confidence)
+            fisherFaceRecognizer.predict(img, label, confidence)
         } catch (e: RuntimeException) {
             Log.e(TAG, e.message)
             return -1
@@ -66,7 +66,7 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
 
     fun predictImage(img_path: String): Int {
 
-        if (eigenFaceRecognizer.empty()) {
+        if (fisherFaceRecognizer.empty()) {
             Log.e(TAG, "Called predict without training model.")
             return -1
         }
@@ -76,14 +76,14 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
 
     private fun calcMaxConfidence() {
 
-        if (eigenFaceRecognizer.empty()) {
+        if (fisherFaceRecognizer.empty()) {
             Log.e(TAG, "Called predict without training model.")
             return
         }
         val confidence = DoublePointer(1)
         val label = IntPointer(1)
         try {
-            eigenFaceRecognizer.predict(testImage, label, confidence)
+            fisherFaceRecognizer.predict(testImage, label, confidence)
         } catch (e: RuntimeException) {
             Log.e(TAG, e.message)
             return
@@ -105,7 +105,7 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
             intBuffer.put(i, labels[i])
         }
         Log.d(TAG, "Training model with ${images.size()} samples and ${labels.max()?.plus(1)} labels. ")
-        eigenFaceRecognizer.train(images, labelMat)
+        fisherFaceRecognizer.train(images, labelMat)
         Log.d(TAG, "Training Finished. ")
         calcMaxConfidence()
         onModelReadyListener.onModelReady()
