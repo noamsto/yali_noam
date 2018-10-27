@@ -13,38 +13,44 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
-            android:screenOrientation="portrait"
-            >
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
-
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SelectClassActivity"
+        <activity
+            android:name=".SelectClassActivity"
             android:screenOrientation="portrait"
-
-            />
+            android:launchMode="singleTop"/>
 
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
             android:value="face" />
 
-        <activity android:name=".StudentDetectorActivity"
+        <activity
+            android:name=".StudentDetectorActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".CreateNewClassActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ManageStudentsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".face.operations.ImageCaptureActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".ArrivedStudentsActivity"
             android:screenOrientation="portrait"
-            />
-        <activity android:name=".CreateNewClassActivity"
-            android:screenOrientation="portrait"
-            />
-        <activity android:name=".ManageStudentsActivity"
-            android:screenOrientation="portrait"
-            />
-        <activity android:name=".face.operations.ImageCaptureActivity"
-            android:screenOrientation="portrait"
-            />
-
+            android:parentActivityName=".SelectClassActivity"
+            >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SelectClassActivity"/>
+        </activity>
     </application>
 
 </manifest>

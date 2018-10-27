@@ -90,9 +90,9 @@ internal class ImageSaver(
 
         val eyeDist = (leftEye.position.x - rightEye.position.x).toInt()
         minX -= eyeDist / 2
-        minY -= (eyeDist * 1.5).toInt()
-        maxX += eyeDist/2
-        maxY += eyeDist/2
+        minY -= eyeDist
+        maxX += eyeDist / 2
+        maxY += eyeDist / 2
         val width = maxX - minX
         val height = maxY - minY
         minY = max(0, minY)
@@ -127,7 +127,7 @@ internal class ImageSaver(
                     bitMapImage.recycle()
                     detectFaceFailureListener.onFailure(java.lang.Exception("Face detectionFailed"))
                 }else{
-                    scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_FACTOR, SCALE_FACTOR, false)
+                    scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_WIDTH, SCALE_HEIGHT, false)
                     croppedFaceViewer.setImageBitmap(scaledFace)
                     writeToFile()
                     detectFaceSuccessListener.onSuccess("Face cropped and saved.")
@@ -175,7 +175,8 @@ internal class ImageSaver(
          * Tag for the [Log].
          */
         private const val TAG = "ImageSaver"
-        const val SCALE_FACTOR = 100 //face will be (SCALE_FACTOR)x(SCALE_FACTOR)
+        const val SCALE_HEIGHT = 420 //face will be (SCALE_FACTOR)x(SCALE_FACTOR)
+        const val SCALE_WIDTH = 260 //face will be (SCALE_FACTOR)x(SCALE_FACTOR)
 
         fun saveTmpImg(faceImg: Bitmap, context: Context): File {
             Log.d(TAG,"writeToFile start")

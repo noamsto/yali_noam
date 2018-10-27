@@ -2,6 +2,7 @@ package com.android.noam.javacvplayground
 
 
 import android.util.Log
+import com.android.noam.javacvplayground.face.operations.ImageSaver
 import org.bytedeco.javacpp.DoublePointer
 import org.bytedeco.javacpp.IntPointer
 import org.bytedeco.javacpp.opencv_core.*
@@ -23,7 +24,7 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
     private var images = MatVector()
     private var labels = Vector<Int>()
     private val fisherFaceRecognizer: FisherFaceRecognizer = FisherFaceRecognizer.create()
-    private lateinit var testImage : Mat
+    private  var testImage = Mat(ImageSaver.SCALE_HEIGHT, ImageSaver.SCALE_WIDTH,CV_8UC1, Scalar(0))
     private var maxConfidence = 0.0
 
     private var imHeight: Int = 0
@@ -45,7 +46,6 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
                         Log.d(TAG, "Read ${it.path} with Label $label")
                     }
         }
-        testImage = image!!
         imHeight = images[0].arrayHeight()
         imWidth = images[0].arrayWidth()
     }
@@ -60,7 +60,10 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
             return -1
         }
         val predictedLabel = label[0]
-        Log.d(TAG, "predicted $predictedLabel, Confidence value: ${confidence.get(0)}")
+        Log.d(TAG, "predicted $predictedLabel, Confidence value: ${confidence.get(0)/maxConfidence}")
+        if (confidence.get()/maxConfidence < 0.66){
+            return -1
+        }
         return predictedLabel
     }
 
@@ -88,8 +91,8 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
             Log.e(TAG, e.message)
             return
         }
-        Log.d(TAG, "Max Confidence value is: ${confidence.get(0)}")
-        maxConfidence = confidence.get(0)
+        maxConfidence = confidence.get()
+        Log.d(TAG, "Max Confidence value is: $maxConfidence")
     }
 
     fun trainModel(): Boolean {

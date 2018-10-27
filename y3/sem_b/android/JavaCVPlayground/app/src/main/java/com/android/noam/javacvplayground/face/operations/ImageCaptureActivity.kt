@@ -45,7 +45,6 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
 
     companion object {
         private const val TAG = "ImageCaptureActivity"
-        private const val WIDTH = 920
         private val ORIENTATIONS = SparseIntArray()
         private val shouldThrottle = AtomicBoolean(false)
         init {
@@ -84,7 +83,8 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
         studentDir = intent.extras.get(CURRENT_STUDENT_DIR) as File
         if (! studentDir.exists() )
             studentDir.mkdir()
-        faceInd = studentDir.listFiles().size
+        if (!studentDir.listFiles().isEmpty())
+            faceInd = studentDir.listFiles().map { it.nameWithoutExtension.toInt()}.max()!! + 1
         picFile = File(studentDir, "$faceInd.jpg")
     }
 
@@ -176,9 +176,9 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
             captureRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
             captureRequestBuilder.addTarget(surface)
 
-            val aspectRatio = textureView.width/textureView.height.toFloat()
-            val width = WIDTH
-            val height = width/aspectRatio
+//            val aspectRatio = textureView.width/textureView.height.toFloat()
+            val width = 1600
+            val height = 1000
             Log.i(TAG, "Imreader dimensions: width:$width, height:$height")
 
             imageReader = ImageReader.newInstance(width, height.toInt(),

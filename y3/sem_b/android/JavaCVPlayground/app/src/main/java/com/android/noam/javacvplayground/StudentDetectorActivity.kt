@@ -2,6 +2,7 @@ package com.android.noam.javacvplayground
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
@@ -22,6 +23,7 @@ import com.android.noam.javacvplayground.face.operations.ImageSaver
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
+import kotlinx.android.synthetic.main.activity_manage_students.*
 import kotlinx.android.synthetic.main.activity_student_detector.*
 import org.bytedeco.javacpp.opencv_core
 import org.jetbrains.anko.doAsync
@@ -29,16 +31,47 @@ import org.jetbrains.anko.toast
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import java.io.File
+import java.lang.Thread.sleep
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.collections.ArrayList
 
 class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuccessListener<Bitmap>, OnFailureListener {
 
+    private lateinit var textureView : AutoFitTextureView
 
+    companion object {
+        private const val TAG = "StudentDetectorActivity"
+        const val ARRIVED_STUDENTS_LIST = "arrived_student_list"
 
+        private const val WIDTH = 920
+        private val ORIENTATIONS = SparseIntArray()
+        private val shouldThrottle = AtomicBoolean(false)
+        init {
+            ORIENTATIONS.append(Surface.ROTATION_0, 90)
+            ORIENTATIONS.append(Surface.ROTATION_90, 0)
+            ORIENTATIONS.append(Surface.ROTATION_180, 270)
+            ORIENTATIONS.append(Surface.ROTATION_270, 180)
+        }
+    }
+
+    private lateinit var cameraID: String
+    private var cameraDevice: CameraDevice? = null
+    private var cameraCaptureSession: CameraCaptureSession? = null
+    private lateinit var captureRequest: CaptureRequest
+    private lateinit var captureRequestBuilder: CaptureRequest.Builder
+    private lateinit var imageDimension: Size
+    private lateinit var imageReader: ImageReader
+    private var mBackgroundHandler : Handler? = null
+    private var mBackgroundThread : HandlerThread? = null
+    private var rotationValue = 0
+    private val arrivedStudents = ArrayList<StudentSet>()
     private lateinit var classObj : ClassObj
     private lateinit var eigenFaces: EigenFaces
     private val modelReady = AtomicBoolean(false)
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_student_detector)
@@ -81,38 +114,31 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
 
         val tmpImg = ImageSaver.saveTmpImg(p0, this)
         val studentId = eigenFaces.predictImage(tmpImg.absolutePath)
-
+        if (studentId == -1){
+            onFailure(java.lang.Exception("I'm not sure, please try again."))
+            return
+        }
         val student = classObj.studentList.single { it.id == studentId }
         predicted_student_id.text = student.id.toString()
         predicted_student_name.text = student.name
-    }
-
-
-    private lateinit var textureView : AutoFitTextureView
-
-    companion object {
-        private const val TAG = "StudentDetectorActivity"
-        private const val WIDTH = 920
-        private val ORIENTATIONS = SparseIntArray()
-        private val shouldThrottle = AtomicBoolean(false)
-        init {
-            ORIENTATIONS.append(Surface.ROTATION_0, 90)
-            ORIENTATIONS.append(Surface.ROTATION_90, 0)
-            ORIENTATIONS.append(Surface.ROTATION_180, 270)
-            ORIENTATIONS.append(Surface.ROTATION_270, 180)
+        if (!arrivedStudents.contains(student)){
+            arrivedStudents.add(student)
+            if (btn_fix.visibility == View.GONE){
+                btn_fix.visibility = View.VISIBLE
+                doAsync {
+                    sleep(4000)
+                    btn_fix.visibility = View.GONE
+                }
+            }
+        }else{
+            toast("${student.name} is Already Registered :)")
+            btn_fix.visibility = View.GONE
         }
+
     }
 
-    private lateinit var cameraID: String
-    private var cameraDevice: CameraDevice? = null
-    private var cameraCaptureSession: CameraCaptureSession? = null
-    private lateinit var captureRequest: CaptureRequest
-    private lateinit var captureRequestBuilder: CaptureRequest.Builder
-    private lateinit var imageDimension: Size
-    private lateinit var imageReader: ImageReader
-    private var mBackgroundHandler : Handler? = null
-    private var mBackgroundThread : HandlerThread? = null
-    private var rotationValue = 0
+
+
 
 
     private val textureListener = object : TextureView.SurfaceTextureListener{
@@ -191,6 +217,19 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
             e.printStackTrace()
         }
         Log.d(TAG, "openCamera end")
+    }
+
+
+    fun finishSigning(view: View){
+        val arrivedStudentsIntent = Intent( this, ArrivedStudentsActivity::class.java)
+        arrivedStudentsIntent.putExtra(ARRIVED_STUDENTS_LIST, arrivedStudents)
+        startActivity(arrivedStudentsIntent)
+
+    }
+
+    fun fixLastAttendance(view: View){
+        arrivedStudents.removeAt(arrivedStudents.lastIndex)
+        btn_fix.visibility = View.GONE
     }
 
     private fun createCameraPreview(){

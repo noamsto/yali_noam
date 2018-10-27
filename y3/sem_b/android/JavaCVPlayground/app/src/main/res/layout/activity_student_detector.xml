@@ -5,11 +5,27 @@
     android:layout_height="match_parent"
     tools:context=".StudentDetectorActivity">
 
+
+
+    <Button
+        android:id="@+id/btn_finish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="8dp"
+        android:padding="10dp"
+        android:textSize="22sp"
+        android:text="Finish"
+        android:onClick="finishSigning"
+        />
+
+
     <com.android.noam.javacvplayground.AutoFitTextureView
         android:id="@+id/texture_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/btn_sign_me"
+
         />
 
     <LinearLayout
@@ -26,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="Student Name"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:layout_margin="5dp"
             android:id="@+id/predicted_student_name"
             />
@@ -37,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="Student ID"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:id="@+id/predicted_student_id"
             />
 
@@ -51,8 +67,23 @@
         android:layout_centerHorizontal="true"
         android:layout_margin="8dp"
         android:padding="10dp"
-        android:textSize="26sp"
+        android:textSize="22sp"
         android:text="@string/sign_me"
         android:onClick="captureStillPicture"
+        />
+
+    <Button
+        android:id="@+id/btn_fix"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="8dp"
+        android:padding="10dp"
+        android:textSize="22sp"
+        android:text="Fix"
+        android:onClick="fixLastAttendance"
+        android:visibility="gone"
         />
 </RelativeLayout>

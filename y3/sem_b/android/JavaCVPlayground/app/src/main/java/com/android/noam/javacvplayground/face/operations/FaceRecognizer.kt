@@ -1,21 +1,12 @@
 package com.android.noam.javacvplayground.face.operations
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
 import android.media.Image
 import android.util.Log
-import android.widget.ImageView
-import com.android.noam.javacvplayground.face.operations.ImageSaver.Companion.SCALE_FACTOR
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.ml.vision.face.FirebaseVisionFace
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceLandmark
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.lang.Exception
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 
 
@@ -77,9 +68,9 @@ internal class FaceRecognizer(
 
         val eyeDist = (leftEye.position.x - rightEye.position.x).toInt()
         minX -= eyeDist / 2
-        minY -= (eyeDist * 1.5).toInt()
-        maxX += eyeDist/2
-        maxY += eyeDist/2
+        minY -= eyeDist
+        maxX += eyeDist / 2
+        maxY += eyeDist / 2
         val width = maxX - minX
         val height = maxY - minY
         minY = max(0, minY)
@@ -114,7 +105,7 @@ internal class FaceRecognizer(
                     bitMapImage.recycle()
                     detectFaceFailureListener.onFailure(java.lang.Exception("Face detectionFailed"))
                 }else{
-                    scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_FACTOR, SCALE_FACTOR,
+                    scaledFace = Bitmap.createScaledBitmap(croppedFace, ImageSaver.SCALE_WIDTH, ImageSaver.SCALE_HEIGHT,
                             false)
                     detectFaceSuccessListener.onSuccess(scaledFace)
                 }
