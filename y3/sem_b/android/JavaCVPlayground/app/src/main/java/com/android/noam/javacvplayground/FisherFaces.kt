@@ -24,12 +24,14 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
     private var images = MatVector()
     private var labels = Vector<Int>()
     private val fisherFaceRecognizer: FisherFaceRecognizer = FisherFaceRecognizer.create()
-    private  var testImage = Mat(ImageSaver.SCALE_HEIGHT, ImageSaver.SCALE_WIDTH,CV_8UC1, Scalar(0))
-    private var maxConfidence = 0.0
 
     private var imHeight: Int = 0
     private var imWidth: Int = 0
 
+
+    init {
+        fisherFaceRecognizer.threshold = 2100.0
+    }
 
     @Suppress("NestedLambdaShadowedImplicitParameter")
     fun readAllStudentsFaces() {
@@ -60,10 +62,7 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
             return -1
         }
         val predictedLabel = label[0]
-        Log.d(TAG, "predicted $predictedLabel, Confidence value: ${confidence.get(0)/maxConfidence}")
-        if (confidence.get()/maxConfidence < 0.66){
-            return -1
-        }
+        Log.d(TAG, "predicted $predictedLabel, Confidence value: ${confidence.get(0)}")
         return predictedLabel
     }
 
@@ -75,24 +74,6 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
         }
         val testSample = imread(img_path, CV_LOAD_IMAGE_GRAYSCALE)
         return predictLabel(testSample)
-    }
-
-    private fun calcMaxConfidence() {
-
-        if (fisherFaceRecognizer.empty()) {
-            Log.e(TAG, "Called predict without training model.")
-            return
-        }
-        val confidence = DoublePointer(1)
-        val label = IntPointer(1)
-        try {
-            fisherFaceRecognizer.predict(testImage, label, confidence)
-        } catch (e: RuntimeException) {
-            Log.e(TAG, e.message)
-            return
-        }
-        maxConfidence = confidence.get()
-        Log.d(TAG, "Max Confidence value is: $maxConfidence")
     }
 
     fun trainModel(): Boolean {
@@ -110,7 +91,6 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
         Log.d(TAG, "Training model with ${images.size()} samples and ${labels.max()?.plus(1)} labels. ")
         fisherFaceRecognizer.train(images, labelMat)
         Log.d(TAG, "Training Finished. ")
-        calcMaxConfidence()
         onModelReadyListener.onModelReady()
         return true
     }
