@@ -1,4 +1,4 @@
-package com.android.noam.javacvplayground
+package com.android.noam.sellfyattendance
 
 import org.junit.Test
 

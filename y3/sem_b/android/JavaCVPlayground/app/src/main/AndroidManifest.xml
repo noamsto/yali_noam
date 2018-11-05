@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.android.noam.javacvplayground">
+    package="com.android.noam.sellfyattendance">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name="com.android.noam.sellfyattendance.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SelectClassActivity"
+            android:name="com.android.noam.sellfyattendance.SelectClassActivity"
             android:screenOrientation="portrait"
             android:launchMode="singleTop"/>
 
@@ -32,24 +32,24 @@
             android:value="face" />
 
         <activity
-            android:name=".StudentDetectorActivity"
+            android:name="com.android.noam.sellfyattendance.StudentDetectorActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".CreateNewClassActivity"
+            android:name="com.android.noam.sellfyattendance.CreateNewClassActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ManageStudentsActivity"
+            android:name="com.android.noam.sellfyattendance.ManageStudentsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".face.operations.ImageCaptureActivity"
+            android:name="com.android.noam.sellfyattendance.face.operations.ImageCaptureActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".ArrivedStudentsActivity"
+        <activity android:name="com.android.noam.sellfyattendance.ArrivedStudentsActivity"
             android:screenOrientation="portrait"
-            android:parentActivityName=".SelectClassActivity"
+            android:parentActivityName="com.android.noam.sellfyattendance.SelectClassActivity"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".SelectClassActivity"/>
+                android:value="com.android.noam.sellfyattendance.SelectClassActivity"/>
         </activity>
     </application>
 

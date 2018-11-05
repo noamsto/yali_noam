@@ -1,4 +1,4 @@
-package com.android.noam.javacvplayground
+package com.android.noam.sellfyattendance
 
 import android.content.Context
 import android.content.Intent
@@ -10,9 +10,11 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.android.noam.javacvplayground.ManageStudentsActivity.Companion.STUDENTS_DIR
-import com.android.noam.javacvplayground.SelectClassActivity.Companion.CLASS_OBJ_TAG
-import com.android.noam.javacvplayground.SelectClassActivity.Companion.EDIT_CLASS
+import com.android.noam.sellfyattendance.ManageStudentsActivity.Companion.STUDENTS_DIR
+import com.android.noam.sellfyattendance.SelectClassActivity.Companion.CLASS_OBJ_TAG
+import com.android.noam.sellfyattendance.SelectClassActivity.Companion.EDIT_CLASS
+import com.android.noam.sellfyattendance.datasets.ClassObj
+import com.android.noam.sellfyattendance.datasets.StudentSet
 import kotlinx.android.synthetic.main.activity_edit_class.*
 import kotlinx.android.synthetic.main.list_view_student_item.view.*
 import org.jetbrains.anko.toast
@@ -76,7 +78,7 @@ class CreateNewClassActivity : AppCompatActivity() {
             return
         }
         val result = Intent()
-        result.putExtra(CLASS_OBJ_TAG, ClassObj(class_name.text.toString(),selectedStudents.size,
+        result.putExtra(CLASS_OBJ_TAG, ClassObj(class_name.text.toString(), selectedStudents.size,
                 selectedStudents))
         setResult(EDIT_CLASS, result)
         this.finish()

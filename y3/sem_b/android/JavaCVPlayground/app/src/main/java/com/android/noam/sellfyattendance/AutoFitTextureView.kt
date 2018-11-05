@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.noam.javacvplayground
+package com.android.noam.sellfyattendance
 
 import android.content.Context
 import android.util.AttributeSet
@@ -64,5 +64,4 @@ class AutoFitTextureView @JvmOverloads constructor(
             }
         }
     }
-
 }

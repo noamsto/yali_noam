@@ -1,9 +1,10 @@
-package com.android.noam.javacvplayground
+package com.android.noam.sellfyattendance
 
 import android.os.Bundle
 import android.support.v4.app.NavUtils
 import android.support.v7.app.AppCompatActivity
-import com.android.noam.javacvplayground.StudentDetectorActivity.Companion.ARRIVED_STUDENTS_LIST
+import com.android.noam.sellfyattendance.StudentDetectorActivity.Companion.ARRIVED_STUDENTS_LIST
+import com.android.noam.sellfyattendance.datasets.StudentSet
 import kotlinx.android.synthetic.main.activity_arrived_students.*
 
 

@@ -1,4 +1,4 @@
-package com.android.noam.javacvplayground.face.operations
+package com.android.noam.sellfyattendance.face.operations
 
 import android.graphics.Bitmap
 import android.media.Image
@@ -10,7 +10,7 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceLandmark
 import kotlin.math.max
 
 
-internal class FaceRecognizer(
+internal class FaceDetector(
         private val image: Image,
         private val rotation: Int,
         private val detectFaceSuccessListener: OnSuccessListener<Bitmap>,
@@ -20,8 +20,8 @@ internal class FaceRecognizer(
     private lateinit var bitMapImage: Bitmap
     private lateinit var croppedFace: Bitmap
     private lateinit var scaledFace: Bitmap
-    private val bmpTools = BMPTools()
-    private val faceDetector = FaceDetect()
+    private val bmpTools = BmpOperations()
+    private val faceDetector = FireBaseFaceDetectorWrapper()
 
     override fun run() {
         bitMapImage = bmpTools.convertToBmpAndRotate(image, rotation)
@@ -47,19 +47,21 @@ internal class FaceRecognizer(
         val leftEye = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.LEFT_EYE)
         val rightEar = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.RIGHT_EAR)
         val leftEar = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.LEFT_EAR)
-        val rightCheek = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.RIGHT_CHEEK)
-        val leftCheek = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.LEFT_CHEEK)
         val bottomMouth = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.MOUTH_BOTTOM)
 
-        if (leftEye == null || rightEye == null || bottomMouth == null){
+        if (leftEye == null || rightEye == null){
             bitMapImage.recycle()
             detectFaceFailureListener.onFailure(java.lang.Exception("Couldn't detect your eyes."))
             return
         }
-
-        var minX = arrayOf(rightEye.position.x,  rightEar?.position?.x, rightCheek?.position?.x)
+        if (bottomMouth == null){
+            bitMapImage.recycle()
+            detectFaceFailureListener.onFailure(java.lang.Exception("Couldn't detect your mouth."))
+            return
+        }
+        var minX = arrayOf(rightEye.position.x,  rightEar?.position?.x)
                 .minWith(CompareWithNull())!!.toInt()
-        var maxX = arrayOf(leftEye.position.x, leftEar?.position?.x, leftCheek?.position?.x)
+        var maxX = arrayOf(leftEye.position.x, leftEar?.position?.x)
                 .minWith(CompareWithNull())!!.toInt()
         var minY = arrayOf(
                 rightEye.position?.y, rightEar?.position?.y, leftEar?.position?.y,
@@ -105,7 +107,7 @@ internal class FaceRecognizer(
                     bitMapImage.recycle()
                     detectFaceFailureListener.onFailure(java.lang.Exception("Face detectionFailed"))
                 }else{
-                    scaledFace = Bitmap.createScaledBitmap(croppedFace, ImageSaver.SCALE_WIDTH, ImageSaver.SCALE_HEIGHT,
+                    scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_WIDTH, SCALE_HEIGHT,
                             false)
                     detectFaceSuccessListener.onSuccess(scaledFace)
                 }
@@ -124,5 +126,7 @@ internal class FaceRecognizer(
          * Tag for the [Log].
          */
         private const val TAG = "ImageSaver"
+        const val SCALE_HEIGHT = 420 //face will be (SCALE_FACTOR)x(SCALE_FACTOR)
+        const val SCALE_WIDTH = 260 //face will be (SCALE_FACTOR)x(SCALE_FACTOR)
     }
 }

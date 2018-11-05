@@ -1,4 +1,4 @@
-package com.android.noam.javacvplayground
+package com.android.noam.sellfyattendance
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,7 +7,8 @@ import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.BaseAdapter
-import com.android.noam.javacvplayground.face.operations.ImageCaptureActivity
+import com.android.noam.sellfyattendance.datasets.StudentSet
+import com.android.noam.sellfyattendance.face.operations.ImageCaptureActivity
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_manage_students.*
 import org.jetbrains.anko.toast
@@ -64,7 +65,7 @@ class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
             }
             val studentSet = StudentSet(
                     studentDir.nameWithoutExtension.filter { it.isLetter() || it.isWhitespace() },
-                    studentDir, studentDir.nameWithoutExtension.filter { it.isDigit() }.toInt() ,
+                    studentDir, studentDir.nameWithoutExtension.filter { it.isDigit() }.toInt(),
                     numOfSamples)
             studentSetList.add(studentSet)
             Log.d(TAG, "Found ${studentSet.name}, path: ${studentDir.path}, " +

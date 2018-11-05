@@ -1,8 +1,8 @@
-package com.android.noam.javacvplayground
+package com.android.noam.sellfyattendance
 
 
 import android.util.Log
-import com.android.noam.javacvplayground.face.operations.ImageSaver
+import com.android.noam.sellfyattendance.datasets.StudentSet
 import org.bytedeco.javacpp.DoublePointer
 import org.bytedeco.javacpp.IntPointer
 import org.bytedeco.javacpp.opencv_core.*
@@ -15,10 +15,11 @@ import java.nio.IntBuffer
 import java.util.*
 
 
-class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private val onModelReadyListener: OnModelReadyListener) {
+class FisherFaces(private val selectedStudents : SortedSet<StudentSet>, private val onModelReadyListener: OnModelReadyListener) {
 
     companion object {
-        private const val TAG = "EigenFaces"
+        private const val TAG = "FisherFaces"
+        private const val THRESHOLD = 2100.0
     }
 
     private var images = MatVector()
@@ -30,7 +31,7 @@ class EigenFaces(private val selectedStudents : SortedSet<StudentSet>, private v
 
 
     init {
-        fisherFaceRecognizer.threshold = 2100.0
+        fisherFaceRecognizer.threshold = THRESHOLD
     }
 
     @Suppress("NestedLambdaShadowedImplicitParameter")

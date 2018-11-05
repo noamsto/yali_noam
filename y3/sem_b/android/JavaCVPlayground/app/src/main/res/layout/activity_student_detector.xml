@@ -20,7 +20,7 @@
         />
 
 
-    <com.android.noam.javacvplayground.AutoFitTextureView
+    <com.android.noam.sellfyattendance.AutoFitTextureView
         android:id="@+id/texture_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

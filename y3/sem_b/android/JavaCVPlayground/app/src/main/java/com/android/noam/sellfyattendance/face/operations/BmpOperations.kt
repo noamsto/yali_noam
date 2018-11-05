@@ -1,16 +1,48 @@
-package com.android.noam.javacvplayground.face.operations
+package com.android.noam.sellfyattendance.face.operations
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.util.Log
 import android.media.Image
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 
-class BMPTools {
+class BmpOperations {
 
     companion object {
-        private const val TAG = "BMPTools"
+        private const val TAG = "BmpOperations"
+
+        @JvmStatic
+        fun writeBmpToFile(bmp : Bitmap, file: File) {
+            var output: FileOutputStream? = null
+            try {
+                output = FileOutputStream(file).apply {
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, this)
+                    flush()
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, e.toString())
+            } finally {
+                output?.let {
+                    try {
+                        it.close()
+                    } catch (e: IOException) {
+                        Log.e(TAG, e.toString())
+                    }
+                }
+            }
+        }
+
+        fun writeBmpToTmpFile(bmp: Bitmap, context: Context): File {
+            Log.d(TAG,"writeToFile start")
+            val tmpFile = File(context.cacheDir, "tmp.jpg")
+            writeBmpToFile(bmp, tmpFile)
+            return tmpFile
+        }
     }
 
     fun convertToBmpAndRotate(image: Image, rotation: Int ): Bitmap {
@@ -37,4 +69,6 @@ class BMPTools {
         Log.d(TAG,"rotateImage end")
         return mirroredImg
     }
+
+
 }

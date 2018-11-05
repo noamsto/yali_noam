@@ -1,9 +1,11 @@
-package com.android.noam.javacvplayground.face.operations
+package com.android.noam.sellfyattendance.face.operations
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
+import android.graphics.drawable.BitmapDrawable
 import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.Bundle
@@ -17,31 +19,19 @@ import android.view.Surface
 import android.view.TextureView
 import android.view.View
 import android.widget.Button
-import com.android.noam.javacvplayground.AutoFitTextureView
-import com.android.noam.javacvplayground.ManageStudentsActivity.Companion.CURRENT_STUDENT_DIR
+import com.android.noam.sellfyattendance.AutoFitTextureView
+import com.android.noam.sellfyattendance.ManageStudentsActivity.Companion.CURRENT_STUDENT_DIR
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_image_capture.*
+import org.jetbrains.anko.imageBitmap
 import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnFailureListener {
-
-
-    override fun onFailure(p0: Exception) {
-        toast(p0.message.toString())
-    }
-
-    override fun onSuccess(p0: String?) {
-        toast("Saved face under:${picFile.absolutePath}")
-        picFile = File(studentDir, "${++faceInd}.jpg")
-    }
-
-    private lateinit var  takePictureBtn : Button
-    private lateinit var textureView : AutoFitTextureView
+class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<Bitmap>, OnFailureListener {
 
     companion object {
         private const val TAG = "ImageCaptureActivity"
@@ -55,6 +45,8 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
         }
     }
 
+    private lateinit var takePictureBtn : Button
+    private lateinit var textureView : AutoFitTextureView
     private lateinit var cameraID: String
     private var cameraDevice: CameraDevice? = null
     private var cameraCaptureSession: CameraCaptureSession? = null
@@ -71,7 +63,7 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.android.noam.javacvplayground.R.layout.activity_image_capture)
+        setContentView(com.android.noam.sellfyattendance.R.layout.activity_image_capture)
 
         takePictureBtn = btn_take_picture!!
         textureView = texture_view!!
@@ -202,15 +194,12 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
         }
     }
 
-    /**
-     * This a callback object for the [ImageReader]. "onImageAvailable" will be called when a
-     * still mediaImage is ready to be saved.
-     */
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
         Log.d(TAG, "onImageAvailableListener start")
         Log.d(TAG, "image add")
         mBackgroundHandler?.post(
-                ImageSaver(it.acquireNextImage(), picFile, rotationValue, croppedFaceView, this, this))
+                FaceDetector(it.acquireNextImage(), rotationValue, this, this)
+        )
         Log.d(TAG, "onImageAvailableListener end")
     }
 
@@ -295,5 +284,18 @@ class ImageCaptureActivity : AppCompatActivity(), OnSuccessListener<String>, OnF
         Log.d(TAG, "onPause")
         stopBackgroundThread()
         super.onPause()
+    }
+
+    override fun onFailure(p0: Exception) {
+        toast(p0.message.toString())
+    }
+
+    override fun onSuccess(croppedFace: Bitmap) {
+        if (croppedFaceView.drawable != null)
+            (croppedFaceView.drawable as BitmapDrawable).bitmap.recycle()
+        croppedFaceView.setImageBitmap(croppedFace)
+        BmpOperations.writeBmpToFile(croppedFace, picFile)
+        toast("Saved face under:${picFile.absolutePath}")
+        picFile = File(studentDir, "${++faceInd}.jpg")
     }
 }

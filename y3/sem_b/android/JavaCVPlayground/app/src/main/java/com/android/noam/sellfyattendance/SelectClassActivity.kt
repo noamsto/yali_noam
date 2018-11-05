@@ -1,4 +1,4 @@
-package com.android.noam.javacvplayground
+package com.android.noam.sellfyattendance
 
 import android.content.Context
 import android.content.Intent
@@ -10,8 +10,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.android.noam.javacvplayground.MainActivity.Companion.APP_DIR_NAME
-import com.android.noam.javacvplayground.ManageStudentsActivity.Companion.STUDENTS_DIR
+import com.android.noam.sellfyattendance.MainActivity.Companion.APP_DIR_NAME
+import com.android.noam.sellfyattendance.ManageStudentsActivity.Companion.STUDENTS_DIR
+import com.android.noam.sellfyattendance.datasets.ClassObj
 import kotlinx.android.synthetic.main.activity_select_class.*
 import kotlinx.android.synthetic.main.card_view.view.*
 import org.jetbrains.anko.longToast
@@ -82,7 +83,6 @@ class SelectClassActivity : AppCompatActivity() {
         classes.clear()
         classes.addAll(objInputStream.readObject() as ArrayList<ClassObj>)
         objInputStream.close()
-
     }
 
     private fun updateClasses() {
@@ -99,7 +99,7 @@ class SelectClassActivity : AppCompatActivity() {
             }
         }
         if (classes.isEmpty() || !classes.last().isNew)
-            classes.add(ClassObj("new",0, TreeSet(), true))
+            classes.add(ClassObj("new", 0, TreeSet(), true))
         classesAdapter.notifyDataSetChanged()
     }
 
@@ -124,12 +124,12 @@ class SelectClassActivity : AppCompatActivity() {
                 classes.add(0, data!!.getSerializableExtra(CLASS_OBJ_TAG)!! as ClassObj)
             }
             else -> {
-                if (preEditClass.isNew)
-                    classes.add(preEditClass)
-                else
+                if (!preEditClass.isNew)
                     classes.add(0, preEditClass)
             }
         }
+        if (preEditClass.isNew)
+            classes.add(preEditClass)
         classesAdapter.notifyDataSetChanged()
     }
 

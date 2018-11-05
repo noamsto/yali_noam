@@ -1,4 +1,4 @@
-package com.android.noam.javacvplayground
+package com.android.noam.sellfyattendance
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -18,19 +18,16 @@ import android.util.SparseIntArray
 import android.view.Surface
 import android.view.TextureView
 import android.view.View
-import com.android.noam.javacvplayground.face.operations.FaceRecognizer
-import com.android.noam.javacvplayground.face.operations.ImageSaver
+import com.android.noam.sellfyattendance.datasets.ClassObj
+import com.android.noam.sellfyattendance.datasets.StudentSet
+import com.android.noam.sellfyattendance.face.operations.BmpOperations
+import com.android.noam.sellfyattendance.face.operations.FaceDetector
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
-import kotlinx.android.synthetic.main.activity_manage_students.*
 import kotlinx.android.synthetic.main.activity_student_detector.*
-import org.bytedeco.javacpp.opencv_core
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
-import org.opencv.android.Utils
-import org.opencv.core.Mat
-import java.io.File
 import java.lang.Thread.sleep
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -38,7 +35,7 @@ import kotlin.collections.ArrayList
 
 class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuccessListener<Bitmap>, OnFailureListener {
 
-    private lateinit var textureView : AutoFitTextureView
+    private lateinit var textureView: AutoFitTextureView
 
     companion object {
         private const val TAG = "StudentDetectorActivity"
@@ -47,6 +44,7 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         private const val WIDTH = 920
         private val ORIENTATIONS = SparseIntArray()
         private val shouldThrottle = AtomicBoolean(false)
+
         init {
             ORIENTATIONS.append(Surface.ROTATION_0, 90)
             ORIENTATIONS.append(Surface.ROTATION_90, 0)
@@ -62,21 +60,21 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
     private lateinit var captureRequestBuilder: CaptureRequest.Builder
     private lateinit var imageDimension: Size
     private lateinit var imageReader: ImageReader
-    private var mBackgroundHandler : Handler? = null
-    private var mBackgroundThread : HandlerThread? = null
-    private var rotationValue = 0
+    private var mBackgroundHandler: Handler? = null
+    private var mBackgroundThread: HandlerThread? = null
+    private var rotationValue = 0   //
     private val arrivedStudents = ArrayList<StudentSet>()
-    private lateinit var classObj : ClassObj
-    private lateinit var eigenFaces: EigenFaces
+    private lateinit var classObj: ClassObj
+    private lateinit var fisherFaces: FisherFaces
     private val modelReady = AtomicBoolean(false)
-
+    private var sensorOrientation = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_student_detector)
 
-        btn_sign_me.setOnClickListener{
+        btn_sign_me.setOnClickListener {
             predicted_student_name.text = ""
             predicted_student_id.text = ""
             captureStillPicture(it)
@@ -89,12 +87,12 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         classObj = intent.extras.getSerializable(SelectClassActivity.CLASS_OBJ_TAG) as ClassObj
 
 
-        eigenFaces = EigenFaces(classObj.studentList, this)
+        fisherFaces = FisherFaces(classObj.studentList, this)
 
 
         doAsync {
-            eigenFaces.readAllStudentsFaces()
-            eigenFaces.trainModel()
+            fisherFaces.readAllStudentsFaces()
+            fisherFaces.trainModel()
         }
     }
 
@@ -102,46 +100,9 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         modelReady.set(true)
     }
 
-    override fun onFailure(p0: Exception) {
-        toast(p0.message.toString())
-    }
-
-    override fun onSuccess(p0: Bitmap) {
-        if (!modelReady.get()){
-            toast("Recognition model not ready yet!")
-            return
-        }
-
-        val tmpImg = ImageSaver.saveTmpImg(p0, this)
-        val studentId = eigenFaces.predictImage(tmpImg.absolutePath)
-        if (studentId == -1){
-            onFailure(java.lang.Exception("I'm not sure, please try again."))
-            return
-        }
-        val student = classObj.studentList.single { it.id == studentId }
-        predicted_student_id.text = student.id.toString()
-        predicted_student_name.text = student.name
-        if (!arrivedStudents.contains(student)){
-            arrivedStudents.add(student)
-            if (btn_fix.visibility == View.GONE){
-                btn_fix.visibility = View.VISIBLE
-                doAsync {
-                    sleep(4000)
-                    btn_fix.visibility = View.GONE
-                }
-            }
-        }else{
-            toast("${student.name} is Already Registered :)")
-            btn_fix.visibility = View.GONE
-        }
-
-    }
 
 
-
-
-
-    private val textureListener = object : TextureView.SurfaceTextureListener{
+    private val textureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
 
         }
@@ -159,7 +120,7 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
 
     }
 
-    private val stateCallBack = object : CameraDevice.StateCallback(){
+    private val stateCallBack = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice?) {
             Log.d(TAG, "onOpened")
             cameraDevice = camera
@@ -177,24 +138,23 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         }
     }
 
-    private fun startBackgroundThread(){
+    private fun startBackgroundThread() {
         mBackgroundThread = HandlerThread("Camera Background")
         mBackgroundThread!!.start()
         mBackgroundHandler = Handler(mBackgroundThread!!.looper)
     }
 
-    private fun stopBackgroundThread(){
+    private fun stopBackgroundThread() {
         mBackgroundThread!!.quitSafely()
-        try{
+        try {
             mBackgroundThread!!.join()
             mBackgroundThread = null
             mBackgroundHandler = null
-        }catch ( e : InterruptedException ){
+        } catch (e: InterruptedException) {
             e.printStackTrace()
         }
     }
 
-    private var sensorOrientation = 0
 
     @SuppressLint("MissingPermission")
     private fun openCamera() = runWithPermissions(android.Manifest.permission.CAMERA,
@@ -213,45 +173,45 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
             sensorOrientation = frontCamCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
             imageDimension = map.getOutputSizes(SurfaceTexture::class.java)[0]
             manager.openCamera(cameraID, stateCallBack, null)
-        }catch (e : CameraAccessException){
+        } catch (e: CameraAccessException) {
             e.printStackTrace()
         }
         Log.d(TAG, "openCamera end")
     }
 
 
-    fun finishSigning(view: View){
-        val arrivedStudentsIntent = Intent( this, ArrivedStudentsActivity::class.java)
+    fun finishSigning(view: View) {
+        val arrivedStudentsIntent = Intent(this, ArrivedStudentsActivity::class.java)
         arrivedStudentsIntent.putExtra(ARRIVED_STUDENTS_LIST, arrivedStudents)
         startActivity(arrivedStudentsIntent)
 
     }
 
-    fun fixLastAttendance(view: View){
+    fun fixLastAttendance(view: View) {
         arrivedStudents.removeAt(arrivedStudents.lastIndex)
         btn_fix.visibility = View.GONE
     }
 
-    private fun createCameraPreview(){
+    private fun createCameraPreview() {
         try {
             val texture = textureView.surfaceTexture!!
             // Setting Image size to textureView available width.
             texture.setDefaultBufferSize(textureView.width, textureView.height)
-            textureView.setAspectRatio(textureView.width,textureView.height)
+            textureView.setAspectRatio(textureView.width, textureView.height)
             val surface = Surface(texture)
             captureRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
             captureRequestBuilder.addTarget(surface)
 
-            val aspectRatio = textureView.width/textureView.height.toFloat()
+            val aspectRatio = textureView.width / textureView.height.toFloat()
             val width = WIDTH
-            val height = width/aspectRatio
+            val height = width / aspectRatio
             Log.i(TAG, "Imreader dimensions: width:$width, height:$height")
 
             imageReader = ImageReader.newInstance(width, height.toInt(),
                     ImageFormat.JPEG, /*maxImages*/ 5).apply {
                 setOnImageAvailableListener(onImageAvailableListener, mBackgroundHandler)
             }
-            cameraDevice!!.createCaptureSession(Arrays.asList(surface, imageReader.surface),  object : CameraCaptureSession.StateCallback(){
+            cameraDevice!!.createCaptureSession(Arrays.asList(surface, imageReader.surface), object : CameraCaptureSession.StateCallback() {
                 override fun onConfigureFailed(session: CameraCaptureSession?) {
                     Log.e(TAG, "onConfigureFailed: failed here.")
                 }
@@ -262,8 +222,8 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
                     cameraCaptureSession = session
                     updatePreview()
                 }
-            }, mBackgroundHandler )
-        }catch (e : CameraAccessException){
+            }, mBackgroundHandler)
+        } catch (e: CameraAccessException) {
             e.printStackTrace()
         }
     }
@@ -276,7 +236,7 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         Log.d(TAG, "onImageAvailableListener start")
         Log.d(TAG, "image add")
         mBackgroundHandler?.post(
-                FaceRecognizer(it.acquireNextImage(), rotationValue,
+                FaceDetector(it.acquireNextImage(), rotationValue,
                         this, this))
         Log.d(TAG, "onImageAvailableListener end")
     }
@@ -287,12 +247,12 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
      */
     @Suppress("UNUSED_PARAMETER")
     private fun captureStillPicture(view: View) {
-        if (shouldThrottle.get()){
+        if (shouldThrottle.get()) {
             toast("Still working on previous picture.")
             return
         }
         shouldThrottle.set(true)
-        Log.d(TAG, "captureStillPicture start" )
+        Log.d(TAG, "captureStillPicture start")
         try {
             if (cameraDevice == null) return
             val rotation = windowManager.defaultDisplay.rotation
@@ -331,17 +291,17 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         } catch (e: CameraAccessException) {
             Log.e(TAG, e.toString())
         }
-        Log.d(TAG, "captureStillPicture end" )
+        Log.d(TAG, "captureStillPicture end")
     }
 
     private fun updatePreview() {
         if (cameraDevice == null)
-            Log.e(TAG,"updatePreview: cameraDevice is null")
+            Log.e(TAG, "updatePreview: cameraDevice is null")
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
-        try{
+        try {
             captureRequest = captureRequestBuilder.build()
-            cameraCaptureSession?.setRepeatingRequest(captureRequest,null, mBackgroundHandler)
-        }catch (e : CameraAccessException){
+            cameraCaptureSession?.setRepeatingRequest(captureRequest, null, mBackgroundHandler)
+        } catch (e: CameraAccessException) {
             e.printStackTrace()
         }
     }
@@ -350,9 +310,9 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         super.onResume()
         Log.d(TAG, "OnResume")
         startBackgroundThread()
-        if( textureView.isAvailable){
+        if (textureView.isAvailable) {
             openCamera()
-        }else{
+        } else {
             textureView.surfaceTextureListener = textureListener
         }
     }
@@ -363,4 +323,37 @@ class StudentDetectorActivity : AppCompatActivity(), OnModelReadyListener, OnSuc
         super.onPause()
     }
 
+    override fun onFailure(p0: Exception) {
+        toast(p0.message.toString())
+    }
+
+    override fun onSuccess(bmp: Bitmap) {
+        if (!modelReady.get()) {
+            toast("Recognition model not ready yet!")
+            return
+        }
+
+        val tmpImgFile = BmpOperations.writeBmpToTmpFile(bmp, this)
+        val studentId = fisherFaces.predictImage(tmpImgFile.absolutePath)
+        if (studentId == -1) {
+            onFailure(java.lang.Exception("I'm not sure, please try again."))
+            return
+        }
+        val student = classObj.studentList.single { it.id == studentId }
+        predicted_student_id.text = student.id.toString()
+        predicted_student_name.text = student.name
+        if (!arrivedStudents.contains(student)) {
+            arrivedStudents.add(student)
+            if (btn_fix.visibility == View.GONE) {
+                btn_fix.visibility = View.VISIBLE
+                doAsync {
+                    sleep(4000)
+                    btn_fix.visibility = View.GONE
+                }
+            }
+        } else {
+            toast("${student.name} is Already Registered :)")
+            btn_fix.visibility = View.GONE
+        }
+    }
 }

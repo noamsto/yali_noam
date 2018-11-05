@@ -1,4 +1,4 @@
-package com.android.noam.javacvplayground.face.operations
+package com.android.noam.sellfyattendance.face.operations
 
 import android.graphics.Bitmap
 import com.google.android.gms.tasks.OnFailureListener
@@ -10,7 +10,7 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetector
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 
 
-class FaceDetect {
+class FireBaseFaceDetectorWrapper {
     private val detector : FirebaseVisionFaceDetector
     private val options = FirebaseVisionFaceDetectorOptions.Builder()
             .setClassificationMode(FirebaseVisionFaceDetectorOptions.ACCURATE)
