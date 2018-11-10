@@ -3,6 +3,7 @@ package com.android.noam.sellfyattendance.face.operations
 import android.graphics.Bitmap
 import android.media.Image
 import android.util.Log
+import com.android.noam.sellfyattendance.comparators.CompareWithNull
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.ml.vision.face.FirebaseVisionFace

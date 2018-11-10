@@ -13,43 +13,50 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity
-            android:name="com.android.noam.sellfyattendance.MainActivity"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+        <!--<activity-->
+            <!--android:name=".MainActivity"-->
+            <!--android:screenOrientation="portrait">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.MAIN" />-->
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
+            <!--</intent-filter>-->
+        <!--</activity>-->
         <activity
-            android:name="com.android.noam.sellfyattendance.SelectClassActivity"
-            android:screenOrientation="portrait"
-            android:launchMode="singleTop"/>
+            android:name=".SelectClassActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
             android:value="face" />
 
         <activity
-            android:name="com.android.noam.sellfyattendance.StudentDetectorActivity"
+            android:name=".StudentDetectorActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.android.noam.sellfyattendance.CreateNewClassActivity"
+            android:name=".CreateNewClassActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.android.noam.sellfyattendance.ManageStudentsActivity"
+            android:name=".ManageStudentsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.android.noam.sellfyattendance.face.operations.ImageCaptureActivity"
+            android:name=".face.operations.ImageCaptureActivity"
             android:screenOrientation="portrait" />
-        <activity android:name="com.android.noam.sellfyattendance.ArrivedStudentsActivity"
-            android:screenOrientation="portrait"
-            android:parentActivityName="com.android.noam.sellfyattendance.SelectClassActivity"
-            >
+        <activity
+            android:name=".ArrivedStudentsActivity"
+            android:parentActivityName=".SelectClassActivity"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.android.noam.sellfyattendance.SelectClassActivity"/>
+                android:value="com.android.noam.sellfyattendance.SelectClassActivity" />
+        </activity>
+        <activity android:name=".StudentAttendanceActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
     </application>
 
