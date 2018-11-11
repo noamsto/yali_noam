@@ -1,4 +1,4 @@
-package com.android.noam.sellfyattendance
+package com.android.noam.sellfyattendance.adapters
 
 import android.app.Activity
 import android.content.Context
@@ -6,8 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
+import com.android.noam.sellfyattendance.R
 import com.android.noam.sellfyattendance.datasets.StudentSet
-import kotlinx.android.synthetic.main.list_view_student_item.view.*
+import kotlinx.android.synthetic.main.list_view_studentset_item.view.*
 
 class StudentsSetAdapter(private val activity: Activity, private val studentsList: ArrayList<StudentSet>) : BaseAdapter() {
     override fun getItem(p0: Int) = studentsList[p0]
@@ -16,12 +17,12 @@ class StudentsSetAdapter(private val activity: Activity, private val studentsLis
 
     override fun getCount() = studentsList.size
 
-    override fun getView(p0: Int, p1: View?, p2: ViewGroup?): View {
+    override fun getView(p0: Int, p1: View?, parent: ViewGroup?): View {
         val studentListItem = if (p1 != null) {
             p1
         } else {
             val inflater = activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-            inflater.inflate(R.layout.list_view_student_item, null)
+            inflater.inflate(R.layout.list_view_studentset_item, parent, false)
         }
         val student = studentsList[p0]
         studentListItem.student_name.text = student.name

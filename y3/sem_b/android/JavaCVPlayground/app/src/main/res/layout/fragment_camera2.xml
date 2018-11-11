@@ -2,11 +2,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.android.noam.sellfyattendance.Camera2Fragment"
+    tools:context="com.android.noam.sellfyattendance.camera.Camera2Fragment"
     >
 
 
-    <com.android.noam.sellfyattendance.AutoFitTextureView
+    <com.android.noam.sellfyattendance.camera.AutoFitTextureView
         android:id="@+id/camera_frag_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -14,12 +14,11 @@
 
     <Button
         android:id="@+id/picture"
-        style="@style/Widget.MaterialComponents.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|bottom"
         android:textSize="20sp"
-        android:onClick="captureStillPicture"
+        android:layout_margin="8dp"
         android:text="@string/picture" />
 
 </FrameLayout>

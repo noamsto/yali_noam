@@ -16,7 +16,8 @@ import com.android.noam.sellfyattendance.SelectClassActivity.Companion.EDIT_CLAS
 import com.android.noam.sellfyattendance.datasets.ClassObj
 import com.android.noam.sellfyattendance.datasets.StudentSet
 import kotlinx.android.synthetic.main.activity_edit_class.*
-import kotlinx.android.synthetic.main.list_view_student_item.view.*
+import kotlinx.android.synthetic.main.list_view_studentset_item.view.*
+import org.bytedeco.javacpp.RealSense
 import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
@@ -43,7 +44,7 @@ class CreateNewClassActivity : AppCompatActivity() {
         samplesDir = intent.extras.getSerializable(STUDENTS_DIR) as File
 
         val studentRecyclerView: RecyclerView = student_recycler_view
-        studentRecyclerAdapter = StudentRecyclerAdapter(this, allStudentList, selectedStudents, this)
+        studentRecyclerAdapter = StudentRecyclerAdapter(this.baseContext, allStudentList, selectedStudents, this)
         studentRecyclerView.layoutManager = LinearLayoutManager(this)
         studentRecyclerView.adapter = studentRecyclerAdapter
         readAllStudents()
@@ -92,7 +93,7 @@ class StudentRecyclerAdapter(private val context: Context,
         RecyclerView.Adapter<StudentViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StudentViewHolder {
         return StudentViewHolder(LayoutInflater.from(context).inflate(
-                R.layout.list_view_student_item, parent, false))
+                R.layout.list_view_studentset_item, parent, false))
     }
 
     override fun getItemCount() = studentSetList.size
@@ -104,9 +105,9 @@ class StudentRecyclerAdapter(private val context: Context,
         holder.studentName.text = studentSet.name
         holder.samplesCount.text = studentSet.samplesCount.toString()
         if (studentSet in selectedStudents)
-            holder.itemView.setBackgroundColor(Color.GREEN)
+            holder.itemView.setBackgroundColor(Color.GRAY)
         else
-            holder.itemView.setBackgroundColor(Color.WHITE)
+            holder.itemView.setBackgroundColor(Color.DKGRAY)
 
     }
 }

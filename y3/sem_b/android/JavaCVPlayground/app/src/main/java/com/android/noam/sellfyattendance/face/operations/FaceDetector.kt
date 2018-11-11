@@ -4,12 +4,13 @@ import android.graphics.Bitmap
 import android.media.Image
 import android.util.Log
 import com.android.noam.sellfyattendance.comparators.CompareWithNull
+import com.google.android.gms.tasks.OnCanceledListener
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.ml.vision.face.FirebaseVisionFace
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceLandmark
+import org.jetbrains.anko.doAsync
 import kotlin.math.max
-
 
 internal class FaceDetector(
         private val image: Image,
@@ -17,7 +18,7 @@ internal class FaceDetector(
         private val detectFaceSuccessListener: OnSuccessListener<Bitmap>,
         private val detectFaceFailureListener : OnFailureListener
 
-) : Runnable {
+) : Thread() {
     private lateinit var bitMapImage: Bitmap
     private lateinit var croppedFace: Bitmap
     private lateinit var scaledFace: Bitmap
@@ -28,15 +29,24 @@ internal class FaceDetector(
         bitMapImage = bmpTools.convertToBmpAndRotate(image, rotation)
         this.faceDetector.detectFace(bitMapImage,
                 OnSuccessListener {
-                    it.forEach {
-                        Log.d(TAG,"run OnSuccess")
-                        Log.i(TAG, "Detected Face: in this bounds ${it.boundingBox}")
-                        processFace(it)
+                    Log.d(TAG, "run onSuccess")
+                    if (it.isEmpty())
+                    {
+                        detectFaceFailureListener
+                        bitMapImage.recycle()
+
+                    }else{
+                        it.forEach {
+                            Log.d(TAG,"run OnSuccess")
+                            Log.i(TAG, "Detected Face: in this bounds ${it.boundingBox}")
+                            processFace(it)
+                        }
                     }
+                    faceDetector.close()
                 }, OnFailureListener {
-            Log.d(TAG, "run OnFailure")
-            Log.i(TAG, "Failed To detect a Face.")
+            Log.d(TAG, "run onFailure")
             bitMapImage.recycle()
+            faceDetector.close()
         })
         image.close()
     }
@@ -46,8 +56,6 @@ internal class FaceDetector(
 
         val rightEye = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.RIGHT_EYE)
         val leftEye = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.LEFT_EYE)
-        val rightEar = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.RIGHT_EAR)
-        val leftEar = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.LEFT_EAR)
         val bottomMouth = firebaseVisionFace.getLandmark(FirebaseVisionFaceLandmark.MOUTH_BOTTOM)
 
         if (leftEye == null || rightEye == null){
@@ -60,13 +68,10 @@ internal class FaceDetector(
             detectFaceFailureListener.onFailure(java.lang.Exception("Couldn't detect your mouth."))
             return
         }
-        var minX = arrayOf(rightEye.position.x,  rightEar?.position?.x)
-                .minWith(CompareWithNull())!!.toInt()
-        var maxX = arrayOf(leftEye.position.x, leftEar?.position?.x)
-                .minWith(CompareWithNull())!!.toInt()
-        var minY = arrayOf(
-                rightEye.position?.y, rightEar?.position?.y, leftEar?.position?.y,
-                leftEye.position?.y).minWith(CompareWithNull())!!.toInt()
+        var minX = rightEye.position.x.toInt()
+        var maxX = leftEye.position.x.toInt()
+        var minY = arrayOf(rightEye.position.y, leftEye.position.y).
+                minWith(CompareWithNull())!!.toInt()
         var maxY = bottomMouth.position.y.toInt()
 
         val eyeDist = (leftEye.position.x - rightEye.position.x).toInt()
@@ -92,41 +97,53 @@ internal class FaceDetector(
     }
 
     private fun verifyAndRecognizeFace() {
-        Log.d(TAG,"verifyAndSaveFace start")
+        Log.d(TAG,"verifyAndRecognizeFace start")
         this.faceDetector.detectFace(croppedFace, OnSuccessListener {
-            it.forEach {
-                val leftEye = it.getLandmark(FirebaseVisionFaceLandmark.LEFT_EYE)
-                val rightEye = it.getLandmark(FirebaseVisionFaceLandmark.RIGHT_EYE)
-                if (leftEye == null || rightEye == null )
-                {
-                    croppedFace.recycle()
-                    bitMapImage.recycle()
-                    detectFaceFailureListener.onFailure(Exception("Face detection failed."))
-                }else if (croppedFace.width - leftEye.position.x  - rightEye.position.x >
-                        croppedFace.width/5){
-                    croppedFace.recycle()
-                    bitMapImage.recycle()
-                    detectFaceFailureListener.onFailure(java.lang.Exception("Face detectionFailed"))
-                }else{
-                    scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_WIDTH, SCALE_HEIGHT,
-                            false)
-                    detectFaceSuccessListener.onSuccess(scaledFace)
+            Log.d(TAG, "verifyAndRecognizeFace onSuccess")
+            Log.d(TAG, "Detected ${it.size} faces")
+            if (it.isEmpty()){
+                croppedFace.recycle()
+                bitMapImage.recycle()
+                detectFaceFailureListener.onFailure(java.lang.Exception("Please Try Again"))
+            }else{
+                it.forEach {
+                    val leftEye = it.getLandmark(FirebaseVisionFaceLandmark.LEFT_EYE)
+                    val rightEye = it.getLandmark(FirebaseVisionFaceLandmark.RIGHT_EYE)
+                    if (leftEye == null || rightEye == null )
+                    {
+                        croppedFace.recycle()
+                        bitMapImage.recycle()
+                        detectFaceFailureListener.onFailure(Exception("Face detection failed."))
+                    }else if (croppedFace.width - leftEye.position.x  - rightEye.position.x >
+                            croppedFace.width/5){
+                        croppedFace.recycle()
+                        bitMapImage.recycle()
+                        detectFaceFailureListener.onFailure(java.lang.Exception("Face detectionFailed"))
+                    }else{
+                        scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_WIDTH, SCALE_HEIGHT,
+                                false)
+                        detectFaceSuccessListener.onSuccess(scaledFace)
+                    }
                 }
             }
+
+            faceDetector.close()
         }, OnFailureListener {
+            Log.d(TAG, "verifyAndRecognizeFace onFailure")
             croppedFace.recycle()
             bitMapImage.recycle()
             detectFaceFailureListener.onFailure(it)
-            Log.e(TAG, "Face detection Error ${it.message}")
-        } )
-        Log.d(TAG,"verifyAndSaveFace end")
+            Log.d(TAG, "Face detection Error ${it.message}")
+            faceDetector.close()
+        })
+        Log.d(TAG,"verifyAndRecognizeFace end")
     }
 
     companion object {
         /**
          * Tag for the [Log].
          */
-        private const val TAG = "ImageSaver"
+        private const val TAG = "FaceDetector"
         const val SCALE_HEIGHT = 420 //face will be (SCALE_FACTOR)x(SCALE_FACTOR)
         const val SCALE_WIDTH = 260 //face will be (SCALE_FACTOR)x(SCALE_FACTOR)
     }

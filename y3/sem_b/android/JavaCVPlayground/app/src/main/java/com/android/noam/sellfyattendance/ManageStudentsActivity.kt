@@ -7,8 +7,8 @@ import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.BaseAdapter
+import com.android.noam.sellfyattendance.adapters.StudentsSetAdapter
 import com.android.noam.sellfyattendance.datasets.StudentSet
-import com.android.noam.sellfyattendance.face.operations.ImageCaptureActivity
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_manage_students.*
 import org.jetbrains.anko.toast
@@ -46,9 +46,8 @@ class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         }
     }
 
-
-    override fun onPostResume() {
-        super.onPostResume()
+    override fun onResume() {
+        super.onResume()
         studentSetList.clear()
         readStudentSets()
     }
@@ -101,9 +100,9 @@ class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         startActivity(imageCaptureIntent)
     }
 
-    override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+    override fun onItemClick(p0: AdapterView<*>?, p1: View?, index: Int, p3: Long) {
 
-        val selectedStudentSet = studentSetList[p2]
+        val selectedStudentSet = studentSetList[index]
         captureSelfies(selectedStudentSet)
     }
 

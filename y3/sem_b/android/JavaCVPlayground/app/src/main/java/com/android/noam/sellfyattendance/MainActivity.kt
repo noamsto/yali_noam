@@ -13,7 +13,7 @@ import java.io.File
 class MainActivity : AppCompatActivity() {
 
     companion object {
-        private val TAG = "MainActivity"
+        private const val TAG = "MainActivity"
         const val APP_DIR_NAME = "selfy_attendance"
     }
     private var rootDir : File? = null
@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(manageStudentsIntent)
     }
 
-    fun pickFacesSet(view: View) =runWithPermissions(
+    fun pickClass(view: View) = runWithPermissions(
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE) {
         val selectClassIntent = Intent(this, SelectClassActivity::class.java)
         if (rootDir == null)

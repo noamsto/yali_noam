@@ -52,6 +52,8 @@ class BmpOperations {
         buffer.get(bytes)
         var bitMapImage = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
         bitMapImage = rotateImage(bitMapImage, rotation)
+        bitMapImage = Bitmap.createScaledBitmap(bitMapImage,
+                (bitMapImage.width * 0.5).toInt(), (bitMapImage.height * 0.5).toInt(), true)
         Log.d(TAG,"convertToBmpAndRotate end")
         return bitMapImage
     }
@@ -69,6 +71,4 @@ class BmpOperations {
         Log.d(TAG,"rotateImage end")
         return mirroredImg
     }
-
-
 }

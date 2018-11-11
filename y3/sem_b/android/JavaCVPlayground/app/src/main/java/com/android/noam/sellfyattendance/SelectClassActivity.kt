@@ -1,27 +1,26 @@
 package com.android.noam.sellfyattendance
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import com.android.noam.sellfyattendance.MainActivity.Companion.APP_DIR_NAME
 import com.android.noam.sellfyattendance.ManageStudentsActivity.Companion.STUDENTS_DIR
+import com.android.noam.sellfyattendance.adapters.ClassObjAdapter
+import com.android.noam.sellfyattendance.adapters.OnLongShortClickListener
 import com.android.noam.sellfyattendance.datasets.ClassObj
+import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_select_class.*
-import kotlinx.android.synthetic.main.card_view.view.*
 import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
 import java.io.*
 import java.util.*
 
 
-class SelectClassActivity : AppCompatActivity() {
+class SelectClassActivity : AppCompatActivity(), OnLongShortClickListener {
 
     companion object {
         private const val TAG = "SelectClassActivity"
@@ -31,9 +30,11 @@ class SelectClassActivity : AppCompatActivity() {
     }
 
     private val classes: ArrayList<ClassObj> = ArrayList()
-    private lateinit var classesAdapter: ClassesAdapter
+    private val classesMarkForDelete: ArrayList<ClassObj> = ArrayList()
+    private lateinit var classesAdapter: ClassObjAdapter
     private lateinit var samplesDir: File
     private lateinit var preEditClass: ClassObj
+    private var deleteMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,25 +46,40 @@ class SelectClassActivity : AppCompatActivity() {
             finish()
         }
         val faceSetRecycler: RecyclerView = class_recycler_view
-        classesAdapter = ClassesAdapter(this, classes, this)
+        classesAdapter = ClassObjAdapter(this, classes, classesMarkForDelete,  this)
         faceSetRecycler.layoutManager = GridLayoutManager(this, 3)
         faceSetRecycler.adapter = classesAdapter
         restoreSavedClassData()
-        updateClasses()
-        swipeLayout.setOnRefreshListener {
-            updateClasses()
-            swipeLayout.isRefreshing = false
+        checkbox_delete_mode.setOnCheckedChangeListener { buttonView, isChecked ->
+            deleteMode = isChecked
+            if (isChecked)
+                confirm_delete_btn.visibility = View.VISIBLE
+            else{
+                confirm_delete_btn.visibility = View.GONE
+                classesMarkForDelete.clear()
+            }
+            classesAdapter.notifyDataSetChanged()
+        }
+        confirm_delete_btn.setOnClickListener {
+            deleteSelectedClasses()
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+
+    override fun onStart() {
+        super.onStart()
+        updateClasses()
+    }
+
+    override fun onStop() {
+        super.onStop()
         saveClassesData()
     }
 
     private fun saveClassesData(){
-        if (classes.last().isNew)
-            classes.removeAt(classes.lastIndex)
+        if (classes.isNotEmpty())
+            if (classes.last().isNew)
+                classes.removeAt(classes.lastIndex)
         if (classes.isEmpty())
             return
         val classesFile = File(filesDir, CLASS_FILE_NAME)
@@ -103,18 +119,18 @@ class SelectClassActivity : AppCompatActivity() {
         classesAdapter.notifyDataSetChanged()
     }
 
-    fun classSelected(currentItem: ClassObj) {
-        if (currentItem.isNew) {
-            editClass(currentItem)
-            return
+    private fun classSelected(currentItem: ClassObj)  = runWithPermissions(android.Manifest.permission.CAMERA,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    {
+        when {
+            currentItem.isNew -> editClass(currentItem)
+            currentItem.isEmpty() -> toast("FaceSet is Empty, please fill it.")
+            else -> {
+                val studentAttendanceActivity = Intent(this, StudentAttendanceActivity::class.java)
+                studentAttendanceActivity.putExtra(CLASS_OBJ_TAG, currentItem)
+                startActivity(studentAttendanceActivity)
+            }
         }
-        if (currentItem.isEmpty()) {
-            toast("FaceSet is Empty, please fill it.")
-            return
-        }
-        val faceDetectorIntent = Intent(this, StudentDetectorActivity::class.java)
-        faceDetectorIntent.putExtra(CLASS_OBJ_TAG, currentItem)
-        startActivity(faceDetectorIntent)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -133,7 +149,31 @@ class SelectClassActivity : AppCompatActivity() {
         classesAdapter.notifyDataSetChanged()
     }
 
-    fun editClass(currentItem: ClassObj): Boolean {
+    override fun onShortClickListener(classObj: ClassObj) {
+        if (deleteMode){
+            if (classObj.isNew)
+                return
+            if (classObj in classesMarkForDelete)
+                classesMarkForDelete.remove(classObj)
+            else{
+                classesMarkForDelete.add(classObj)
+            }
+            classesAdapter.notifyDataSetChanged()
+            return
+        }
+        classSelected(classObj)
+    }
+
+    override fun onLongClickListener(classObj: ClassObj): Boolean {
+        if (deleteMode){
+            longToast("Can enter Edit class mode when delete mode is active.")
+            return true
+        }
+        editClass(classObj)
+        return true
+    }
+
+    private fun editClass(currentItem: ClassObj): Boolean {
         preEditClass = currentItem
         classes.remove(currentItem)
         val createNewClassIntent = Intent(this, CreateNewClassActivity::class.java)
@@ -143,46 +183,14 @@ class SelectClassActivity : AppCompatActivity() {
         return true
     }
 
-    class ClassesAdapter(private val context: Context,
-                         private val classesList: ArrayList<ClassObj>,
-                         private val SelectClassActivity: SelectClassActivity) : RecyclerView.Adapter<ViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            return ViewHolder(LayoutInflater.from(context).inflate(R.layout.card_view, parent, false))
+    private fun deleteSelectedClasses(){
+        classesMarkForDelete.forEach {
+            classes.remove(it)
         }
-
-        override fun getItemCount() = classesList.size
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val classObj = classesList[position]
-            holder.selectClassActivity = SelectClassActivity
-            holder.currentItem = classObj
-            holder.setName.text = classObj.name
-            val numOfStudents = classObj.studentList.size
-            holder.peopleCount.text = if ( !classObj.isNew ) {
-                holder.peopleCount.visibility = View.VISIBLE
-                "Students: $numOfStudents"
-            } else {
-                holder.peopleCount.visibility = View.GONE
-                ""
-            }
-        }
+        checkbox_delete_mode.isChecked = false
+        classesAdapter.notifyDataSetChanged()
     }
 }
 
-class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    val setName = view.setName!!
-    val peopleCount = view.peopleCount!!
-    lateinit var currentItem: ClassObj
-    lateinit var selectClassActivity: SelectClassActivity
-
-    init {
-        view.setOnClickListener {
-            selectClassActivity.classSelected(currentItem)
-        }
-        view.setOnLongClickListener{
-            selectClassActivity.editClass(currentItem)
-        }
-    }
-}
 
 

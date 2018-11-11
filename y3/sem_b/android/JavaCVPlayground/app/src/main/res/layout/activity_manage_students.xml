@@ -3,10 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ManageStudentsActivity"
     android:orientation="vertical">
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
         android:id="@+id/new_student_area"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -14,38 +15,78 @@
         android:orientation="horizontal"
         >
 
-        <EditText
-            android:id="@+id/student_name_ET"
-            android:hint="Student Name"
-            android:layout_width="0dp"
-            android:layout_weight="2"
-            android:layout_height="match_parent"
-            android:textAlignment="center"
+        <TextView
+            android:id="@+id/help_new_student"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:text="@string/help_new_student"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
             android:layout_margin="7dp"
+            android:textSize="14sp"
+            />
+
+        <EditText
+            app:layout_constraintTop_toBottomOf="@+id/help_new_student"
+            app:layout_constraintStart_toStartOf="@id/help_new_student"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/add_student_btn"
+            android:id="@+id/student_name_ET"
+            android:inputType="text"
+            android:hint="@string/student_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
             android:textSize="20sp"
             android:imeOptions="actionDone"
             android:lines="1"
-            />
+            tools:ignore="Autofill" />
 
         <Button
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf= "@id/student_name_ET"
             android:id="@+id/add_student_btn"
-            android:layout_width="0dp"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Submit"
+            android:text="@string/btn_create"
             android:textSize="20sp"
             android:onClick="submitNewStudent"
             android:layout_margin="7dp"
+            android:padding="3dp"
             />
-    </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
 
-    <ListView
-        android:id="@+id/student_list_view"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
-        android:isScrollContainer="false"
+        android:layout_weight="5"
+        android:orientation="vertical"
+        android:layout_marginTop="7dp"
         >
-    </ListView>
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/help_existing_student"
+            android:textSize="14sp"
+            android:layout_margin="7dp"
+            android:id="@+id/help_existing_students"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+
+            />
+        <ListView
+            app:layout_constraintTop_toBottomOf="@+id/help_existing_students"
+            app:layout_constraintStart_toStartOf="parent"
+            android:id="@+id/student_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:isScrollContainer="false"
+            >
+        </ListView>
+    </android.support.constraint.ConstraintLayout>
+
 
 </LinearLayout>

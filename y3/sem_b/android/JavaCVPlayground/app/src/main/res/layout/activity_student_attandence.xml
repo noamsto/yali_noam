@@ -1,15 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.android.noam.sellfyattendance.StudentAttendanceActivity">
 
     <FrameLayout
         android:id="@+id/camera_frag_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/black">
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/student_layout"
+        app:layout_constraintVertical_bias="0">
     </FrameLayout>
-    
-</RelativeLayout>
+
+
+
+    <Button
+        android:id="@+id/btn_finish"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:padding="10dp"
+        android:textSize="22sp"
+        android:text="Finish"
+        android:onClick="finishSigning"
+        />
+
+
+    <LinearLayout
+        android:id="@+id/student_layout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="2dp"
+        android:layout_margin="8dp"
+        android:orientation="vertical"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:elevation="2dp"
+            android:hint="Student Name"
+            android:textSize="14sp"
+            android:layout_margin="5dp"
+            android:textColor="@android:color/white"
+            android:id="@+id/predicted_student_name"
+            />
+
+        <TextView
+            android:layout_margin="5dp"
+            android:elevation="2dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Student ID"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:id="@+id/predicted_student_id"
+            />
+    </LinearLayout>
+
+    <Button
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/btn_fix"
+        android:elevation="2dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:padding="10dp"
+        android:textSize="22sp"
+        android:text="Fix"
+        android:onClick="fixLastAttendance"
+        android:visibility="gone"
+        />
+
+</android.support.constraint.ConstraintLayout>

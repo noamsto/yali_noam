@@ -11,7 +11,7 @@
     app:cardUseCompatPadding="true"
     android:clickable="true"
     android:foreground="?android:selectableItemBackground"
-    >
+    android:focusable="true">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:hint="Set Name"
             android:textSize="18sp"
-            android:textAlignment="center"
+            android:gravity="center"
             android:layout_margin="5dp"
             android:id="@+id/setName"
             />
@@ -31,6 +31,7 @@
             android:layout_height="wrap_content"
             android:hint="Peoples: 10"
             android:textSize="18sp"
+            android:gravity="center"
             android:textAlignment="center"
             android:layout_margin="5dp"
             android:id="@+id/peopleCount"

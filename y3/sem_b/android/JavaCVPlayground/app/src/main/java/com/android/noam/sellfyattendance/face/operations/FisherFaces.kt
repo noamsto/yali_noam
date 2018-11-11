@@ -1,4 +1,4 @@
-package com.android.noam.sellfyattendance
+package com.android.noam.sellfyattendance.face.operations
 
 
 import android.util.Log
@@ -25,7 +25,6 @@ class FisherFaces(private val selectedStudents : SortedSet<StudentSet>, private 
     private var images = MatVector()
     private var labels = Vector<Int>()
     private val fisherFaceRecognizer: FisherFaceRecognizer = FisherFaceRecognizer.create()
-
     private var imHeight: Int = 0
     private var imWidth: Int = 0
 

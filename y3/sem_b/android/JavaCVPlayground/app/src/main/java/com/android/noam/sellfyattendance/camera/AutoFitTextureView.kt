@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.noam.sellfyattendance
+package com.android.noam.sellfyattendance.camera
 
 import android.content.Context
 import android.util.AttributeSet

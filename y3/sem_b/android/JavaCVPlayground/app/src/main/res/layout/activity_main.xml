@@ -14,6 +14,7 @@
         android:layout_gravity="center"
         android:layout_margin="10dp"
         android:textSize="30sp"
+        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -27,6 +28,7 @@
         android:layout_gravity="center"
         android:textSize="30sp"
         android:text="Manage students"
+        android:layout_margin="7dp"
         android:layout_weight="1"
         android:id="@+id/manage_students"
         android:onClick="startManageStudentsActivity"/>
@@ -37,9 +39,10 @@
         android:layout_height="0dp"
         android:layout_gravity="center"
         android:textSize="30sp"
-        android:text="Select Faces Set"
+        android:layout_margin="7dp"
+        android:text="Select Class"
         android:layout_weight="1"
         android:id="@+id/selectSetBTN"
-        android:onClick="pickFacesSet"/>
+        android:onClick="pickClass"/>
 
 </android.support.v7.widget.LinearLayoutCompat>

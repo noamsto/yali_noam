@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <TextView
@@ -13,15 +14,15 @@
         android:layout_margin="7dp"
         />
 
-
-    <ImageView
-        android:id="@+id/cropped_face_view"
-        android:elevation="2dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="15dp"
-        android:minHeight="100dp"
-        android:minWidth="100dp"/>
+    <TextView
+        android:id="@+id/num_of_samples"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:textSize="18sp"
+        android:hint="# Samples"
+        android:layout_weight="1"
+        android:layout_margin="7dp"
+        />
 
 
 </LinearLayout>
