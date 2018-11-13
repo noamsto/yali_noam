@@ -22,6 +22,7 @@ import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
 
+@Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class CreateNewClassActivity : AppCompatActivity() {
 
     companion object {
@@ -38,9 +39,10 @@ class CreateNewClassActivity : AppCompatActivity() {
         setContentView(R.layout.activity_edit_class)
         oldClass = intent.extras.get(CLASS_OBJ_TAG) as ClassObj
         selectedStudents.addAll(oldClass.studentList)
-        if (!oldClass.isNew)
+        if (!oldClass.isNew){
             class_name.setText(oldClass.name)
-
+            confirm_edit_class_btn.text = getString(R.string.confirm_btn)
+        }
         samplesDir = intent.extras.getSerializable(STUDENTS_DIR) as File
 
         val studentRecyclerView: RecyclerView = student_recycler_view

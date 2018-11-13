@@ -39,7 +39,7 @@
     </android.support.v7.widget.RecyclerView>
 
     <Button
-        android:id="@+id/class_name_btn"
+        android:id="@+id/confirm_edit_class_btn"
         style="@style/Widget.MaterialComponents.Button"
         android:layout_width="match_parent"
         android:layout_height="0dp"

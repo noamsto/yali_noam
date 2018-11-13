@@ -182,7 +182,8 @@ class SelectClassActivity : AppCompatActivity(), OnLongShortClickListener {
             longToast("Can enter Edit class mode when delete mode is active.")
             return true
         }
-        editClass(classObj)
+        if (!classObj.isNew)
+            editClass(classObj)
         return true
     }
 

@@ -1,5 +1,6 @@
 package com.android.noam.sellfyattendance.adapters
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.view.LayoutInflater
@@ -17,6 +18,7 @@ class StudentsSetAdapter(private val activity: Activity, private val studentsLis
 
     override fun getCount() = studentsList.size
 
+    @SuppressLint("SetTextI18n")
     override fun getView(p0: Int, p1: View?, parent: ViewGroup?): View {
         val studentListItem = if (p1 != null) {
             p1
@@ -27,6 +29,7 @@ class StudentsSetAdapter(private val activity: Activity, private val studentsLis
         val student = studentsList[p0]
         studentListItem.student_name.text = student.name
         studentListItem.num_of_samples.text = "${student.samplesCount} Samples"
+        studentListItem.student_id.text = "ID: ${student.id}"
         return studentListItem
     }
 }
