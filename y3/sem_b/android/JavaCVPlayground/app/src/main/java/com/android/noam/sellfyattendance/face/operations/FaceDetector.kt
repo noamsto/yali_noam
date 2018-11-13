@@ -2,14 +2,15 @@ package com.android.noam.sellfyattendance.face.operations
 
 import android.graphics.Bitmap
 import android.media.Image
+import android.os.Environment
 import android.util.Log
+import com.android.noam.sellfyattendance.MainActivity
 import com.android.noam.sellfyattendance.comparators.CompareWithNull
-import com.google.android.gms.tasks.OnCanceledListener
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.ml.vision.face.FirebaseVisionFace
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceLandmark
-import org.jetbrains.anko.doAsync
+import java.io.File
 import kotlin.math.max
 
 internal class FaceDetector(
@@ -29,10 +30,11 @@ internal class FaceDetector(
         bitMapImage = bmpTools.convertToBmpAndRotate(image, rotation)
         this.faceDetector.detectFace(bitMapImage,
                 OnSuccessListener {
-                    Log.d(TAG, "run onSuccess")
+                    Log.d(TAG, "Run: onSuccess")
+                    Log.d(TAG, "Run: Detected ${it.size} Faces")
                     if (it.isEmpty())
                     {
-                        detectFaceFailureListener
+                        detectFaceFailureListener.onFailure(java.lang.Exception("Try again."))
                         bitMapImage.recycle()
 
                     }else{
@@ -75,9 +77,9 @@ internal class FaceDetector(
         var maxY = bottomMouth.position.y.toInt()
 
         val eyeDist = (leftEye.position.x - rightEye.position.x).toInt()
-        minX -= eyeDist / 2
+        minX -= eyeDist / 3
         minY -= eyeDist
-        maxX += eyeDist / 2
+        maxX += eyeDist / 3
         maxY += eyeDist / 2
         val width = maxX - minX
         val height = maxY - minY
@@ -88,56 +90,22 @@ internal class FaceDetector(
             detectFaceFailureListener.onFailure(Exception("Move further from the camera."))
             return
         }
-
         Log.i(TAG, "Cropping image to top left: $minX, $minY and width:$width, height:$height")
         croppedFace = Bitmap.createBitmap(bitMapImage,minX, minY, width, height)
-        verifyAndRecognizeFace()
+
+        //Debug purposes
+        val rootDir = File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), MainActivity.APP_DIR_NAME)
+        val dbgPic = File(rootDir, "dbg.jpg")
+        BmpOperations.writeBmpToFile(croppedFace, dbgPic)
+        //End Debug
+        scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_WIDTH, SCALE_HEIGHT,
+                false)
+        detectFaceSuccessListener.onSuccess(scaledFace)
         Log.d(TAG,"processFace end")
         return
     }
 
-    private fun verifyAndRecognizeFace() {
-        Log.d(TAG,"verifyAndRecognizeFace start")
-        this.faceDetector.detectFace(croppedFace, OnSuccessListener {
-            Log.d(TAG, "verifyAndRecognizeFace onSuccess")
-            Log.d(TAG, "Detected ${it.size} faces")
-            if (it.isEmpty()){
-                croppedFace.recycle()
-                bitMapImage.recycle()
-                detectFaceFailureListener.onFailure(java.lang.Exception("Please Try Again"))
-            }else{
-                it.forEach {
-                    val leftEye = it.getLandmark(FirebaseVisionFaceLandmark.LEFT_EYE)
-                    val rightEye = it.getLandmark(FirebaseVisionFaceLandmark.RIGHT_EYE)
-                    if (leftEye == null || rightEye == null )
-                    {
-                        croppedFace.recycle()
-                        bitMapImage.recycle()
-                        detectFaceFailureListener.onFailure(Exception("Face detection failed."))
-                    }else if (croppedFace.width - leftEye.position.x  - rightEye.position.x >
-                            croppedFace.width/5){
-                        croppedFace.recycle()
-                        bitMapImage.recycle()
-                        detectFaceFailureListener.onFailure(java.lang.Exception("Face detectionFailed"))
-                    }else{
-                        scaledFace = Bitmap.createScaledBitmap(croppedFace, SCALE_WIDTH, SCALE_HEIGHT,
-                                false)
-                        detectFaceSuccessListener.onSuccess(scaledFace)
-                    }
-                }
-            }
-
-            faceDetector.close()
-        }, OnFailureListener {
-            Log.d(TAG, "verifyAndRecognizeFace onFailure")
-            croppedFace.recycle()
-            bitMapImage.recycle()
-            detectFaceFailureListener.onFailure(it)
-            Log.d(TAG, "Face detection Error ${it.message}")
-            faceDetector.close()
-        })
-        Log.d(TAG,"verifyAndRecognizeFace end")
-    }
 
     companion object {
         /**

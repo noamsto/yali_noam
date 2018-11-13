@@ -12,12 +12,14 @@ import com.android.noam.sellfyattendance.ManageStudentsActivity.Companion.STUDEN
 import com.android.noam.sellfyattendance.adapters.ClassObjAdapter
 import com.android.noam.sellfyattendance.adapters.OnLongShortClickListener
 import com.android.noam.sellfyattendance.datasets.ClassObj
+import com.android.noam.sellfyattendance.datasets.StudentSet
 import com.livinglifetechway.quickpermissions_kotlin.runWithPermissions
 import kotlinx.android.synthetic.main.activity_select_class.*
 import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
 import java.io.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class SelectClassActivity : AppCompatActivity(), OnLongShortClickListener {
@@ -80,9 +82,12 @@ class SelectClassActivity : AppCompatActivity(), OnLongShortClickListener {
         if (classes.isNotEmpty())
             if (classes.last().isNew)
                 classes.removeAt(classes.lastIndex)
-        if (classes.isEmpty())
-            return
         val classesFile = File(filesDir, CLASS_FILE_NAME)
+        if (classes.isEmpty()){
+            if (classesFile.exists())
+                classesFile.delete()
+            return
+        }
         val fileOutputStream = FileOutputStream(classesFile)
         val objectOutputStream = ObjectOutputStream(fileOutputStream)
         objectOutputStream.writeObject(classes)
@@ -102,9 +107,14 @@ class SelectClassActivity : AppCompatActivity(), OnLongShortClickListener {
     }
 
     private fun updateClasses() {
+        val invalidStudenSet = ArrayList<StudentSet>()
         for (classObj in classes ) {
             var numOfSamples = 0
             for (studentSet in classObj.studentList){
+                if (!studentSet.dir.exists()){
+                    invalidStudenSet.add(studentSet)
+                    continue
+                }
                 studentSet.dir.walkTopDown().forEach {
                     Log.d(TAG, "Reading from Student dir: ${studentSet.dir.path}")
                     if (it.parentFile != studentSet.dir && it.extension.matches("""pgm|jpg|bmp|png""".toRegex())) {
@@ -113,6 +123,9 @@ class SelectClassActivity : AppCompatActivity(), OnLongShortClickListener {
                 }
                 studentSet.samplesCount = numOfSamples
             }
+            // Remove students with no valid dir
+            classObj.studentList.removeAll(invalidStudenSet)
+            invalidStudenSet.clear()
         }
         if (classes.isEmpty() || !classes.last().isNew)
             classes.add(ClassObj("new", 0, TreeSet(), true))
