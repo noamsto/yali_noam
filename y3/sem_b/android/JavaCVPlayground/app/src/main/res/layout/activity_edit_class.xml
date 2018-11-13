@@ -1,56 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".CreateNewClassActivity"
-    android:orientation="vertical">
+    >
 
     <EditText
         android:id="@+id/class_name"
         android:hint="Class Name"
         android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:textAlignment="center"
         android:layout_margin="15dp"
         android:textSize="20sp"
         android:imeOptions="actionDone"
         android:lines="1"
         android:inputType="textNoSuggestions"
-        tools:ignore="Autofill" />
+        tools:ignore="Autofill"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Choose Students:"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/class_name"
+        app:layout_constraintStart_toStartOf="@id/class_name"
+        android:id="@+id/select_student_help"
+        android:layout_margin="7dp"/>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/student_recycler_view"
+
+    <ListView
+        android:id="@+id/student_list_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="4"
-        android:scrollbars="vertical"
-        android:isScrollContainer="false"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        app:layout_constraintBottom_toTopOf="@id/confirm_edit_class_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/select_student_help"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0"
+        app:layout_constrainedWidth="true"
+        app:layout_constrainedHeight="true"
         >
 
-    </android.support.v7.widget.RecyclerView>
+    </ListView>
 
     <Button
         android:id="@+id/confirm_edit_class_btn"
-        style="@style/Widget.MaterialComponents.Button"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
         android:text="@string/btn_create"
-        android:layout_margin="15dp"
-        android:textSize="16sp"
+        android:layout_margin="7dp"
+        android:textSize="18sp"
         android:onClick="submitClass"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         />
 
-
-
-
-</android.support.v7.widget.LinearLayoutCompat>
+</android.support.constraint.ConstraintLayout>

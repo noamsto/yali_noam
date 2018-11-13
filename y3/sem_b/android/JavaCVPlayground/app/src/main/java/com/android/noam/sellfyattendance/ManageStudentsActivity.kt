@@ -102,6 +102,8 @@ class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         if (newStudentName.isNotBlank()) {
             createNewStudentDir(newStudentName)
             student_name_ET.setText("")
+        }else{
+            toast("Please enter student name.")
         }
     }
     private fun createNewStudentDir(newStudentName: String) {

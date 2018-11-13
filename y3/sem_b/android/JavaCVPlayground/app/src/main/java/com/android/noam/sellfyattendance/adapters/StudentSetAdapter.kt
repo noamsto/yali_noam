@@ -14,7 +14,9 @@ import kotlinx.android.synthetic.main.list_view_studentset_item.view.*
 
 class StudentsSetAdapter(private val activity: Activity,
                          private val studentsList: ArrayList<StudentSet>,
-                         private val studentMarkForDelete: ArrayList<StudentSet>) : BaseAdapter() {
+                         private val studentToMark: Iterable<StudentSet>? = null,
+                         private val markColor: Int = Color.RED,
+                         private val defaultColor: Int = Color.GRAY) : BaseAdapter() {
 
     override fun getItem(p0: Int) = studentsList[p0]
 
@@ -31,10 +33,12 @@ class StudentsSetAdapter(private val activity: Activity,
             inflater.inflate(R.layout.list_view_studentset_item, parent, false)
         }
         val student = studentsList[p0]
-        if (student in studentMarkForDelete)
-            studentListItem.setBackgroundColor(Color.RED)
-        else
-            studentListItem.setBackgroundColor(Color.GRAY)
+        if (studentToMark != null) {
+            if (student in studentToMark)
+                studentListItem.setBackgroundColor(markColor)
+            else
+                studentListItem.setBackgroundColor(defaultColor)
+        }
         studentListItem.student_name.text = student.name
         studentListItem.num_of_samples.text = "${student.samplesCount} Samples"
         studentListItem.student_id.text = "ID: ${student.id}"
