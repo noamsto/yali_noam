@@ -9,4 +9,6 @@
     <string name="samples"># Samples</string>
     <string name="student_id">Student ID</string>
     <string name="confirm_btn">Confirm</string>
+    <string name="select_class_help">help: Long press on an a existing class to enter edit mode. Short press to enter attendance check.</string>
+    <string name="delete_checkbox">Delete Mode</string>
 </resources>

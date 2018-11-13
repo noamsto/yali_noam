@@ -24,12 +24,9 @@ class ClassObjAdapter(private val context: Context,
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val classObj = classesList[position]
         if (classObj in classesMarkForDelete)
-        {
             holder.itemView.setBackgroundColor(Color.RED)
-        }else
-        {
+        else
             holder.itemView.setBackgroundColor(Color.GRAY)
-        }
         holder.listenerActivity = listenerActivity
         holder.currentItem = classObj
         holder.setName.text = classObj.name

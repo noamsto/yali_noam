@@ -28,7 +28,9 @@ class SelectClassActivity : AppCompatActivity(), OnLongShortClickListener {
         private const val TAG = "SelectClassActivity"
         private const val CLASS_FILE_NAME = "classes.dat"
         const val CLASS_OBJ_TAG = "CLASS_OBJ_TAG"
+        const val CLASS_LIST_TAG = "CLASS_LIST_TAG"
         const val EDIT_CLASS = 101
+
     }
 
     private val classes: ArrayList<ClassObj> = ArrayList()
@@ -102,8 +104,15 @@ class SelectClassActivity : AppCompatActivity(), OnLongShortClickListener {
         val fileInputStream = FileInputStream(classesFile)
         val objInputStream = ObjectInputStream(fileInputStream)
         classes.clear()
-        classes.addAll(objInputStream.readObject() as ArrayList<ClassObj>)
-        objInputStream.close()
+        try {
+            classes.addAll(objInputStream.readObject() as ArrayList<ClassObj>)
+        }catch (e: Exception){
+            Log.e(TAG, e.message)
+            classesFile.delete()
+            return
+        }finally {
+            objInputStream.close()
+        }
     }
 
     private fun updateClasses() {
@@ -193,6 +202,7 @@ class SelectClassActivity : AppCompatActivity(), OnLongShortClickListener {
         val createNewClassIntent = Intent(this, CreateNewClassActivity::class.java)
         createNewClassIntent.putExtra(STUDENTS_DIR, samplesDir)
         createNewClassIntent.putExtra(CLASS_OBJ_TAG, currentItem)
+        createNewClassIntent.putExtra(CLASS_LIST_TAG, classes)
         this.startActivityForResult(createNewClassIntent, EDIT_CLASS)
         return true
     }

@@ -88,5 +88,35 @@
         </ListView>
     </android.support.constraint.ConstraintLayout>
 
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        android:id="@+id/delete_block"
+        android:padding="5dp">
+
+
+        <CheckBox
+            android:id="@+id/checkbox_delete_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/delete_checkbox"
+            app:layout_constraintStart_toStartOf="@id/delete_block"
+            app:layout_constraintTop_toTopOf="@id/delete_block"
+            android:checked="false"
+            />
+
+        <Button
+            android:id="@+id/confirm_delete_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/confirm_btn"
+            app:layout_constraintBaseline_toBaselineOf="@id/checkbox_delete_mode"
+            app:layout_constraintEnd_toEndOf="@id/delete_block"
+            android:visibility="gone"
+            />
+
+    </android.support.constraint.ConstraintLayout>
+
 
 </LinearLayout>

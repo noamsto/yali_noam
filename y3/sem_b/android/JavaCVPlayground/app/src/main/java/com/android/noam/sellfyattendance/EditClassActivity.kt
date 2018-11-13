@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.android.noam.sellfyattendance.ManageStudentsActivity.Companion.STUDENTS_DIR
+import com.android.noam.sellfyattendance.SelectClassActivity.Companion.CLASS_LIST_TAG
 import com.android.noam.sellfyattendance.SelectClassActivity.Companion.CLASS_OBJ_TAG
 import com.android.noam.sellfyattendance.SelectClassActivity.Companion.EDIT_CLASS
 import com.android.noam.sellfyattendance.datasets.ClassObj
@@ -21,8 +22,9 @@ import org.bytedeco.javacpp.RealSense
 import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
+import kotlin.collections.ArrayList
 
-@Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+@Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS", "UNCHECKED_CAST")
 class CreateNewClassActivity : AppCompatActivity() {
 
     companion object {
@@ -33,11 +35,13 @@ class CreateNewClassActivity : AppCompatActivity() {
     private lateinit var samplesDir : File
     private lateinit var studentRecyclerAdapter: RecyclerView.Adapter<StudentViewHolder>
     private lateinit var oldClass: ClassObj
+    private lateinit var classes : ArrayList<ClassObj>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit_class)
         oldClass = intent.extras.get(CLASS_OBJ_TAG) as ClassObj
+        classes = intent.extras.get(CLASS_LIST_TAG) as ArrayList<ClassObj>
         selectedStudents.addAll(oldClass.studentList)
         if (!oldClass.isNew){
             class_name.setText(oldClass.name)
@@ -79,6 +83,13 @@ class CreateNewClassActivity : AppCompatActivity() {
         if (class_name.text.isBlank()){
             toast("Please fill Class name.")
             return
+        }else{
+            classes.forEach {
+                if (!it.isNew  && it.name == class_name.text.toString()) {
+                    toast("Class already exists!")
+                    return
+                }
+            }
         }
         val result = Intent()
         result.putExtra(CLASS_OBJ_TAG, ClassObj(class_name.text.toString(), selectedStudents.size,
@@ -106,6 +117,7 @@ class StudentRecyclerAdapter(private val context: Context,
         holder.currentItem = studentSet
         holder.studentName.text = studentSet.name
         holder.samplesCount.text = studentSet.samplesCount.toString()
+        holder.studentID.text = studentSet.id.toString()
         if (studentSet in selectedStudents)
             holder.itemView.setBackgroundColor(Color.GRAY)
         else
@@ -116,6 +128,7 @@ class StudentRecyclerAdapter(private val context: Context,
 class StudentViewHolder(view: View) : RecyclerView.ViewHolder(view) {
     val studentName = view.student_name!!
     val samplesCount = view.num_of_samples!!
+    val studentID = view.student_id!!
     lateinit var currentItem: StudentSet
     lateinit var createNewClassActivity: CreateNewClassActivity
     init {

@@ -3,6 +3,7 @@ package com.android.noam.sellfyattendance.adapters
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +12,10 @@ import com.android.noam.sellfyattendance.R
 import com.android.noam.sellfyattendance.datasets.StudentSet
 import kotlinx.android.synthetic.main.list_view_studentset_item.view.*
 
-class StudentsSetAdapter(private val activity: Activity, private val studentsList: ArrayList<StudentSet>) : BaseAdapter() {
+class StudentsSetAdapter(private val activity: Activity,
+                         private val studentsList: ArrayList<StudentSet>,
+                         private val studentMarkForDelete: ArrayList<StudentSet>) : BaseAdapter() {
+
     override fun getItem(p0: Int) = studentsList[p0]
 
     override fun getItemId(p0: Int) = p0.toLong()
@@ -27,6 +31,10 @@ class StudentsSetAdapter(private val activity: Activity, private val studentsLis
             inflater.inflate(R.layout.list_view_studentset_item, parent, false)
         }
         val student = studentsList[p0]
+        if (student in studentMarkForDelete)
+            studentListItem.setBackgroundColor(Color.RED)
+        else
+            studentListItem.setBackgroundColor(Color.GRAY)
         studentListItem.student_name.text = student.name
         studentListItem.num_of_samples.text = "${student.samplesCount} Samples"
         studentListItem.student_id.text = "ID: ${student.id}"

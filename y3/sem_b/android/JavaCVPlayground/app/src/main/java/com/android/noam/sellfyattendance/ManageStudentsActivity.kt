@@ -16,26 +16,50 @@ import java.io.File
 
 class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListener{
 
-
     companion object {
         const val TAG = "ManageStudentsActivity"
         const val STUDENTS_DIR = "samples"
         const val CURRENT_STUDENT_DIR = "CURRENT_STUDENT_DIR"
     }
 
-    var studentSetList: ArrayList<StudentSet> = ArrayList()
+    private var studentSetList: ArrayList<StudentSet> = ArrayList()
+    private var studentMarkForDelete: ArrayList<StudentSet> = ArrayList()
     private lateinit var rootDir: File
-    lateinit var samplesDir: File
-    lateinit var studentSetAdapter: BaseAdapter
+    private lateinit var samplesDir: File
+    private lateinit var studentSetAdapter: BaseAdapter
+    private var deleteMode = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_manage_students)
         rootDir = intent.getSerializableExtra(MainActivity.APP_DIR_NAME)!! as File
-        studentSetAdapter = StudentsSetAdapter(this, studentSetList)
+        studentSetAdapter = StudentsSetAdapter(this, studentSetList, studentMarkForDelete)
         student_list_view.adapter = studentSetAdapter
         student_list_view.onItemClickListener = this
         initSamplesDir(rootDir)
+        checkbox_delete_mode.setOnCheckedChangeListener { buttonView, isChecked ->
+            deleteMode = isChecked
+            if (isChecked)
+                confirm_delete_btn.visibility = View.VISIBLE
+            else{
+                confirm_delete_btn.visibility = View.GONE
+                studentMarkForDelete.clear()
+            }
+            studentSetAdapter.notifyDataSetChanged()
+        }
+        confirm_delete_btn.setOnClickListener {
+            deleteSelectedStudents()
+        }
+    }
+
+    private fun deleteSelectedStudents() {
+        studentMarkForDelete.forEach {
+            it.dir.deleteRecursively()
+        }
+        studentSetList.removeAll(studentMarkForDelete)
+        checkbox_delete_mode.isChecked = false
+        studentSetAdapter.notifyDataSetChanged()
     }
 
     private fun initSamplesDir(rootDir: File) {
@@ -53,7 +77,6 @@ class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
     }
 
     private fun readStudentSets() {
-
         Log.d(TAG, "Searching for all faces sets in ${samplesDir.absolutePath}")
         for (studentDir in samplesDir.listFiles()) {
             var numOfSamples = 0
@@ -73,6 +96,7 @@ class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
 
         studentSetAdapter.notifyDataSetChanged()
     }
+    @Suppress("UNUSED_PARAMETER")
     fun submitNewStudent(view: View) {
         val newStudentName = student_name_ET.text.toString()
         if (newStudentName.isNotBlank()) {
@@ -81,7 +105,7 @@ class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
         }
     }
     private fun createNewStudentDir(newStudentName: String) {
-        val studentID = studentSetList.lastIndex.plus(1)
+        val studentID = studentSetList.map { it.id }.max()?.plus(1) ?: 0
         val studentDir = File(samplesDir, "$newStudentName$studentID")
         if (!studentDir.exists()) {
             Log.d(CreateNewClassActivity.TAG, "Creating New StudentSet dir: ${studentDir.absolutePath}")
@@ -101,10 +125,15 @@ class ManageStudentsActivity : AppCompatActivity(), AdapterView.OnItemClickListe
     }
 
     override fun onItemClick(p0: AdapterView<*>?, p1: View?, index: Int, p3: Long) {
-
-        val selectedStudentSet = studentSetList[index]
-        captureSelfies(selectedStudentSet)
+        val student = studentSetList[index]
+        if (deleteMode) {
+            if (student in studentMarkForDelete)
+                studentMarkForDelete.remove(student)
+            else
+                studentMarkForDelete.add(student)
+            studentSetAdapter.notifyDataSetChanged()
+            return
+        }else
+            captureSelfies(student)
     }
-
-
 }
